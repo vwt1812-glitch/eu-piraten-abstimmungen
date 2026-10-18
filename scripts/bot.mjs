@@ -10,6 +10,8 @@ import { telegramClient } from "../lib/telegram.mjs";
 import { updatesVerarbeiten, aktionenAusfuehren, arbeitOffen, chatsAusUpdates } from "../lib/freigabe.mjs";
 import { faellig, heute } from "../lib/zeitplan.mjs";
 import { warnungenTexte } from "../lib/warnungen.mjs";
+import { postizClient } from "../lib/postiz.mjs";
+import { auswahlAusUmgebung, kanalUebersicht } from "../lib/kanalauswahl.mjs";
 
 const pfad = (p) => fileURLToPath(new URL("../" + p, import.meta.url));
 const json = async (p, standard) => JSON.parse(await readFile(pfad(p), "utf8").catch(() => JSON.stringify(standard)));
@@ -30,6 +32,7 @@ const HILFE = [
   "",
   "/status – was gerade offen ist",
   "/jetzt – den täglichen Lauf sofort starten",
+  "/kanaele – auf welchen Postiz-Kanälen gepostet wird",
 ].join("\n");
 
 // Startet scripts/<name>.mjs; bei Fehler kommen die letzten Zeilen per Telegram.
@@ -92,12 +95,16 @@ async function warnungenSchicken() {
 }
 
 let naechsterPostVersuch = 0;
+let letzterPostFehler = null;
 async function offenesErledigen() {
   if (!arbeitOffen(await json("daten/freigabe.json", leer)) || Date.now() < naechsterPostVersuch) return;
   try {
     await schritt("posten");
+    letzterPostFehler = null;
   } catch (e) {
-    await melden(`⚠️ Einplanen: ${e.message}`);
+    // Derselbe Fehler (z. B. keine Kanäle ausgewählt) kommt bei jedem neuen Versuch – nur einmal melden.
+    if (e.message !== letzterPostFehler) await melden(`⚠️ Einplanen: ${e.message}`);
+    letzterPostFehler = e.message;
   }
   // Bleibt etwas offen (z. B. Postiz-Stundenlimit), erst in 10 Minuten wieder versuchen.
   naechsterPostVersuch = arbeitOffen(await json("daten/freigabe.json", leer)) ? Date.now() + 10 * 60 * 1000 : 0;
@@ -160,6 +167,13 @@ for (;;) {
         await antwort("🔄 Starte den täglichen Lauf …");
         await taeglicherLauf();
         await antwort("✔️ Fertig.");
+      } else if (b.befehl === "/kanaele") {
+        try {
+          const alle = await postizClient({ url: process.env.POSTIZ_URL, apiKey: process.env.POSTIZ_API_KEY }).kanaele();
+          await antwort(kanalUebersicht(alle, auswahlAusUmgebung(process.env)).slice(0, 4000));
+        } catch (e) {
+          await antwort(`⚠️ Postiz nicht erreichbar: ${e.message}`);
+        }
       } else await antwort(HILFE);
     }
   }

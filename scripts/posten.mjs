@@ -15,6 +15,7 @@ import { beitrag } from "../lib/beitrag.mjs";
 import { grafikenRendern, mitDeutschemTitel, deutscheTitel } from "../lib/render.mjs";
 import { postizVerbinden, passtInsLimit, veroeffentlichen, naechsterTermin, anfragenLetzteStunde, MINDESTENS_FREI } from "../lib/veroeffentlichen.mjs";
 import { telegramClient } from "../lib/telegram.mjs";
+import { auswahlAusUmgebung } from "../lib/kanalauswahl.mjs";
 import { mitAenderungen, vorschauText, knoepfe } from "../lib/freigabe.mjs";
 
 const pfad = (p) => fileURLToPath(new URL("../" + p, import.meta.url));
@@ -135,7 +136,7 @@ if (vorschlagen.length) {
 // ── 4. An Postiz ─────────────────────────────────────────────────────
 if (anPostiz.length) {
   if (!POSTIZ_URL || !POSTIZ_API_KEY) throw new Error("POSTIZ_URL und POSTIZ_API_KEY fehlen.");
-  const verbindung = await postizVerbinden({ url: POSTIZ_URL, apiKey: POSTIZ_API_KEY });
+  const verbindung = await postizVerbinden({ url: POSTIZ_URL, apiKey: POSTIZ_API_KEY, auswahl: auswahlAusUmgebung(process.env) });
   const telegram = mitTelegram ? telegramClient({ token: TELEGRAM_BOT_TOKEN }) : null;
   try {
     await anPostizSchicken(verbindung, telegram);

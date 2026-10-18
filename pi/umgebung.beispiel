@@ -4,6 +4,10 @@
 # Postiz: Adresse der Instanz, z. B. https://postiz.example.org (API unter /api/public/v1) und API-Key aus Postiz → Einstellungen → Public API
 POSTIZ_URL=
 POSTIZ_API_KEY=
+# Nur auf diesen Kanälen posten (Name, Profil oder ID, kommagetrennt) – Übersicht im Bot mit /kanaele.
+# Alternativ oder zusätzlich alle Kanäle eines Postiz-„Kunden“. Ohne Auswahl wird nichts gepostet.
+POSTIZ_KANAELE=
+POSTIZ_KUNDE=
 
 # Telegram-Bot von @BotFather (/newbot)
 TELEGRAM_BOT_TOKEN=

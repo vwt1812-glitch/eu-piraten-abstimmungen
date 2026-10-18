@@ -39,6 +39,9 @@ Das Skript installiert Node.js 22, Chromium und Schriften, die Abhängigkeiten u
    - `POSTIZ_API_KEY` – aus Postiz → Einstellungen → Public API
    - `TELEGRAM_BOT_TOKEN` – von BotFather
    - `TELEGRAM_CHAT_ID` – erst einmal leer lassen
+   - `POSTIZ_KANAELE` – **nur auf diesen Kanälen wird gepostet**: Name, Profil oder ID, kommagetrennt
+     (z. B. `PIRATEN EU, @piraten_eu_bsky`), und/oder `POSTIZ_KUNDE` – alle Kanäle eines Postiz-„Kunden“.
+     Ohne Auswahl wird nichts gepostet. Welche Kanäle es gibt, zeigt der Bot mit `/kanaele`.
 3. `sudo systemctl start eu-piraten` und dem Bot in Telegram schreiben. Er antwortet mit der **Chat-ID**. Die in
    `/etc/eu-piraten.env` eintragen und `sudo systemctl restart eu-piraten`. Nur dieser Chat darf freigeben – das
    kann auch eine Gruppe sein, dann kann das ganze Team freigeben.
@@ -83,7 +86,8 @@ der Kurzfassung, dem englischen Originaltitel und drei Knöpfen:
 
 Prüffälle aus `abweichungen.json` (z. B. Kernenergie) bekommen einen ⚠️-Hinweis.
 
-Befehle: `/status` (was offen ist), `/jetzt` (täglichen Lauf sofort starten), `/hilfe`.
+Befehle: `/status` (was offen ist), `/jetzt` (täglichen Lauf sofort starten), `/kanaele` (auf welchen
+Postiz-Kanälen gepostet wird), `/hilfe`.
 
 ## Was gepostet wird
 
@@ -99,7 +103,9 @@ Befehle: `/status` (was offen ist), `/jetzt` (täglichen Lauf sofort starten), `
    Grafiken als Karussell mit Alternativtexten – TikTok im Hochformat, sonst 4:5. Zusätzlich eine **Story** mit
    der Übersicht auf Instagram und Facebook (`stories`).
 
-Kanäle: alle in Postiz verbundenen vom Typ X, Bluesky, Mastodon, Threads, Telegram, Facebook, Instagram, TikTok.
+Kanäle: nur die in `POSTIZ_KANAELE` / `POSTIZ_KUNDE` ausgewählten – andere Accounts in Postiz bleiben unberührt.
+Unterstützt sind X, Bluesky, Mastodon, Threads, Telegram, Facebook, Instagram und TikTok; ausgewählte Kanäle
+anderer Typen oder deaktivierte werden übersprungen und in `/kanaele` gemeldet.
 
 Postiz erlaubt standardmäßig 30 API-Anfragen pro Stunde (`API_LIMIT` in der Postiz-Konfiguration); eine
 Abstimmung braucht etwa 8. Der Dienst zählt mit (`max_anfragen_pro_stunde`, 28) und plant den Rest später ein.
@@ -189,7 +195,7 @@ haben Vorrang.
 | `scripts/portraets.mjs` | lädt die Porträts nach `cache/portraets/` |
 | `scripts/posten.mjs` | Vorschauen nach Telegram, Freigegebenes nach Postiz |
 | `scripts/grafiken.mjs`, `scripts/vorschau.mjs` | Grafiken bzw. Posttexte zum Ansehen |
-| `lib/` | Auswertung, Regeln, Titel, Grafiken, Posttexte, Postiz, Telegram, Freigabe |
+| `lib/` | Auswertung, Regeln, Titel, Grafiken, Posttexte, Postiz und Kanalauswahl, Telegram, Freigabe |
 | `assets/` | Gestaltung der Grafiken, Logos |
 | `pi/` | Installation und Dienst für den Raspberry Pi |
 
