@@ -55,7 +55,7 @@ for await (const s of leseCsv(cache("member_votes"))) {
   if (s.member_id === referenzId) referenz.set(id, s.position);
   if (s.country_code === config.land) {
     if (!deutsche.has(id)) deutsche.set(id, []);
-    deutsche.get(id).push({ partei: s.national_party_short_label, position: s.position });
+    deutsche.get(id).push({ id: Number(s.member_id), partei: s.national_party_short_label, position: s.position });
   }
 }
 
@@ -68,8 +68,19 @@ const ergebnis = [...abstimmungen.values()]
   }))
   .sort((a, b) => b.zeitpunkt.localeCompare(a.zeitpunkt) || b.id - a.id);
 
+// Namen der deutschen Abgeordneten und der Referenz-Abgeordneten für die Grafiken.
+const ids = new Set([config.referenz.id]);
+for (const liste of deutsche.values()) for (const s of liste) ids.add(s.id);
+const abgeordnete = {};
+for await (const m of leseCsv(cache("members"))) {
+  if (ids.has(Number(m.id))) abgeordnete[m.id] = { vorname: m.first_name, nachname: m.last_name };
+}
+await writeFile(pfad("data/abgeordnete.json"), JSON.stringify(abgeordnete, null, 1) + "\n");
+
 const stand = (await readFile(pfad("cache/last_updated.txt"), "utf8").catch(() => "")).trim() || null;
-await writeFile(pfad("data/abstimmungen.json"), JSON.stringify({ stand, abstimmungen: ergebnis }, null, 1) + "\n");
+// Eine Zeile pro Abstimmung: kompakt, aber mit lesbaren Diffs.
+const zeilen = ergebnis.map((a) => " " + JSON.stringify(a)).join(",\n");
+await writeFile(pfad("data/abstimmungen.json"), `{"stand":${JSON.stringify(stand)},"abstimmungen":[\n${zeilen}\n]}\n`);
 
 const status = Object.groupBy(ergebnis, (a) => a.piraten.status);
 for (const [k, v] of Object.entries(status)) console.log(`${k}: ${v.length}`);

@@ -6,6 +6,7 @@ const ziel = new URL("../cache/", import.meta.url);
 
 export const TABELLEN = [
   "votes",
+  "members",
   "member_votes",
   "oeil_subjects",
   "oeil_subject_votes",

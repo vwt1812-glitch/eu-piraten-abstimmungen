@@ -21,6 +21,11 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx playwright install --with-deps chromium
 
       - name: Tests
         run: npm test
@@ -34,9 +39,20 @@ jobs:
       - name: Vorschau
         run: npm run vorschau -- 5 >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Porträts laden
+        run: npm run portraets
+
+      - name: Grafiken der 3 neuesten Abstimmungen
+        run: npm run grafiken
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: grafiken
+          path: out/**/*.png
+
       - name: Änderungen committen
         run: |
-          git add data/abstimmungen.json
+          git add data/abstimmungen.json data/abgeordnete.json
           if git diff --cached --quiet; then
             echo "Keine Änderungen."
             exit 0
