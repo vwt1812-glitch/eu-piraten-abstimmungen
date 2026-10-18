@@ -75,6 +75,7 @@ test("Mastodon direkt: Zugang aus der Umgebung, Postiz-Mastodon-Kanäle fallen w
   assert.deepEqual(ohnePostizMastodon(alle).map((k) => k.id), ["1"]);
   const text = kanalUebersicht(alle, { kanaele: ["1", "2"] }, { konto: "piratencheckeu", einstellungen: { sichtbarkeit: "unlisted", inhaltswarnung: "EU-Politik: {titel}" } });
   assert.match(text, /✅ Piraten-Check EU \(x/);
+  assert.match(text, /POSTIZ_KUNDE: \(leer\)\nPOSTIZ_KANAELE: „1“, „2“/);
   assert.match(text, /⬜ Piraten-Check EU Masto \(mastodon\) – übersprungen, Mastodon läuft direkt/);
   assert.match(text, /✅ Mastodon direkt: @piratencheckeu \(unlisted, Inhaltswarnung/);
 });
