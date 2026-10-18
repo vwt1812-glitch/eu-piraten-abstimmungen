@@ -190,6 +190,7 @@ h2 {
 figure { margin: 0; width: var(--gesicht); text-align: center; }
 .kopf { position: relative; width: var(--gesicht); height: var(--gesicht); }
 .kopf .foto { width: 100%; height: 100%; border-radius: 6px; object-fit: cover; object-position: top; display: block; }
+.kopf .foto-bild { position: absolute; inset: 0; }
 .kopf .badge { position: absolute; right: -6px; bottom: -6px; }
 .foto-leer {
   display: flex !important;
