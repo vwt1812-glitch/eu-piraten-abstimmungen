@@ -103,3 +103,11 @@ test("Erklärung: höchstens zwei Stichpunkte, am Wortende gekürzt, mit KI-Hinw
   const ohne = uebersichtHtml(abstimmung([["CDU", 3]]), { titel: "T", css: "" });
   assert.doesNotMatch(ohne, /Worum geht es|ki-quelle/);
 });
+
+test("Fast quadratische Logos bekommen den Parteinamen daneben, breite nicht", () => {
+  const a = abstimmung([["Tierschutz", 1], ["CDU", 2]]);
+  const assets = { logos: { tierschutz: "file:///t.png", cdu: "file:///c.png" }, logoFormate: { tierschutz: 1, cdu: 3.3 } };
+  const html = uebersichtHtml(a, { titel: "T", css: "", assets });
+  assert.match(html, /<span class="logo logo-mit-name"><img src="file:\/\/\/t\.png" alt=""><span>Tierschutz<\/span><\/span>/);
+  assert.match(html, /<img class="logo" src="file:\/\/\/c\.png" alt="CDU">/);
+});
