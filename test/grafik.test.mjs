@@ -97,6 +97,9 @@ test("Erklärung: höchstens zwei Stichpunkte, am Wortende gekürzt, mit KI-Hinw
   assert.match(mit, /Worum geht es\?/);
   assert.match(mit, /Es geht um &lt;Blei&gt;\./);
   assert.match(mit, /class="ki-quelle"/);
+  assert.match(mit, /<span class="absender">Piraten-Check EU<\/span>/);
+  const mitSignet = uebersichtHtml(abstimmung([["CDU", 3]]), { titel: "T", css: "", assets: { logos: { "piraten-signet": "file:///s.png" } } });
+  assert.match(mitSignet, /<span class="absender"><img src="file:\/\/\/s.png" alt="">Piraten-Check EU<\/span>/);
   const eigen = uebersichtHtml({ ...abstimmung([["CDU", 3]]), zusammenfassung: ["Eigener Text."], erklaerungEigen: true }, { titel: "T", css: "" });
   assert.match(eigen, /Eigener Text\./);
   assert.doesNotMatch(eigen, /ki-quelle/);

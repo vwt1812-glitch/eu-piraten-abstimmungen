@@ -240,7 +240,11 @@ footer .segment { display: flex; align-items: center; justify-content: center; f
 .legende { display: flex; align-items: center; gap: 22px; font-size: 18px; font-weight: 600; margin-top: 10px; flex-wrap: wrap; }
 .legende .eintrag { display: inline-flex; align-items: center; gap: 6px; }
 .legende b { font-weight: 700; }
-footer .quelle { font-size: 14px; color: #666; margin-top: 6px; }
+footer .quelle { display: flex; align-items: center; gap: 16px; font-size: 14px; color: #666; margin-top: 6px; }
+.absender { margin-left: auto; flex: none; display: inline-flex; align-items: center; gap: 7px; font-family: "Oswald", sans-serif; font-size: 19px; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; color: var(--blau); }
+.absender img { width: 24px; height: 24px; }
+.format-hoch .absender { font-size: 22px; }
+.format-hoch .absender img { width: 28px; height: 28px; }
 
 /* Hochformat 1080×1920 (TikTok, Stories): oben und unten blenden die Apps Bedienelemente ein,
    dort steht nur Hintergrund. Seitlich etwas mehr Rand wegen der Buttons rechts. */
