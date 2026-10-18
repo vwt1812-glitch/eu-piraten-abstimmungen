@@ -158,9 +158,12 @@ async function anPostizSchicken(verbindung, telegram) {
       console.log(`Postiz-Limit erreicht (${bisher + verbindung.postiz.anfragen}/${o.max_anfragen_pro_stunde}) – Rest später.`);
       break;
     }
-    // Entwürfe einen Tag später (Postiz braucht ein Datum), Posts im Abstand von abstand_minuten.
+    // Posts mit Abstand (abstand_minuten) und nur im Zeitfenster; Entwürfe einen Tag später (Postiz braucht ein Datum).
     const datum = typ === "schedule"
-      ? naechsterTermin(gepostet, { abstandMinuten: o.abstand_minuten })
+      ? naechsterTermin(gepostet, {
+          abstandMinuten: o.abstand_minuten,
+          zeitfenster: { ...o.zeitfenster, zeitzone: config.zeitplan.zeitzone },
+        })
       : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
     gepostet[id] = await veroeffentlichen(verbindung, a, pngs, { datum, typ, o });

@@ -11,10 +11,14 @@
     "pro_tag": 3,
     "pro_woche": 12,
     "max_alter_tage": 21,
+    "zeitfenster": {
+      "von": "09:00",
+      "bis": "21:00"
+    },
     "abstand_minuten": 120,
     "tiktok_methode": "DIRECT_POST",
-    "stories": true,
-    "max_anfragen_pro_stunde": 28
+    "max_anfragen_pro_stunde": 28,
+    "stories": true
   },
   "checksomevotes": "https://check-some-votes.eu",
   "zeitplan": {

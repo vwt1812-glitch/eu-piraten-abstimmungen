@@ -59,8 +59,8 @@ im Repository.
 Jede vorgeschlagene Abstimmung kommt mit allen Grafiken (Feed-Karussell + Übersicht im Hochformat), dem Posttext,
 der Kurzfassung, dem englischen Originaltitel und drei Knöpfen:
 
-- **✅ Ja, posten** – wird in Postiz eingeplant (nächster freier Termin, Abstand `abstand_minuten`); der Bot
-  meldet Zeitpunkt und Kanäle.
+- **✅ Ja, posten** – wird in Postiz eingeplant (nächster freier Termin, siehe unten); der Bot meldet Zeitpunkt
+  und Kanäle.
 - **❌ Nein** – wird nie gepostet.
 - **✏️ Ändern** – der Bot fragt nach. Auf die Frage (oder die Vorschau) antworten mit
   - einem neuen Titel, einfach als Text,
@@ -79,7 +79,10 @@ Befehle: `/status` (was offen ist), `/jetzt` (täglichen Lauf sofort starten), `
    höchstens 21 Tage alt, noch nicht vorgeschlagen.
 2. **Nur mit deutschem Titel.** Abstimmungen ohne stehen im Protokoll, fertig zum Kopieren für `titel.json`.
 3. Neueste zuerst, höchstens 3 Vorschläge pro Tag und 12 pro Woche (`config.json` → `posten`).
-4. Pro Post: Text in passender Länge je Plattform (X 280, Bluesky 300, Mastodon/Threads 500, sonst lang), alle
+4. **Wann:** nur zwischen 9 und 21 Uhr (`zeitfenster`, Berliner Zeit) und mindestens 2 Stunden nach dem letzten
+   Post (`abstand_minuten`), auch wenn der schon veröffentlicht ist. Wer abends nach 21 Uhr freigibt, sieht den
+   Post am nächsten Morgen um 9 Uhr.
+5. Pro Post: Text in passender Länge je Plattform (X 280, Bluesky 300, Mastodon/Threads 500, sonst lang), alle
    Grafiken als Karussell mit Alternativtexten – TikTok im Hochformat, sonst 4:5. Zusätzlich eine **Story** mit
    der Übersicht auf Instagram und Facebook (`stories`).
 
