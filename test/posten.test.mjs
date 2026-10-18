@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { auswahl } from "../lib/auswahl.mjs";
-import { beitrag, alsHtml, unterstuetzt, alternativtexte } from "../lib/beitrag.mjs";
+import { beitrag, story, alsHtml, unterstuetzt, alternativtexte } from "../lib/beitrag.mjs";
 import { apiBasis, postizClient } from "../lib/postiz.mjs";
 
 const JETZT = new Date("2026-10-18T12:00:00Z");
@@ -66,7 +66,7 @@ test("Beitrag: Kanäle, Texte und Einstellungen je Plattform", () => {
   ];
   assert.deepEqual(kanaele.filter(unterstuetzt).map((k) => k.id), ["k1", "k2", "k3", "k4"]);
 
-  const bilder = [{ id: "m1", path: "https://p/1.png", alt: "Alt" }];
+  const bilder = { feed: [{ id: "m1", path: "https://p/1.png", alt: "Alt" }], hoch: [{ id: "h1", path: "https://p/h1.png", alt: "Alt" }] };
   const b = beitrag(abstimmung(1, 17), { kanaele, bilder, datum: "2026-10-18T13:00:00Z", optionen: { tiktokMethode: "UPLOAD" } });
   assert.equal(b.type, "schedule");
   assert.equal(b.posts.length, 4);
@@ -76,7 +76,9 @@ test("Beitrag: Kanäle, Texte und Einstellungen je Plattform", () => {
   assert.deepEqual(insta.settings, { __type: "instagram", post_type: "post", collaborators: [] });
   assert.equal(tiktok.settings.content_posting_method, "UPLOAD");
   assert.equal(tiktok.settings.privacy_level, "PUBLIC_TO_EVERYONE");
-  assert.deepEqual(x.value[0].image, bilder);
+  assert.deepEqual(x.value[0].image, bilder.feed);
+  assert.deepEqual(insta.value[0].image, bilder.feed);
+  assert.deepEqual(tiktok.value[0].image, bilder.hoch);
   assert.match(mastodon.value[0].content, /^<p>🇪🇺 EU-Parlament, 17\.10\.2026<\/p>/);
   assert.match(mastodon.value[0].content, /Abstimmung 1 &amp; mehr/);
 });
@@ -110,4 +112,28 @@ test("Postiz: Key ohne Bearer, Upload als Formular, Fehler mit Status", async ()
   assert.ok(aufrufe[0].opt.body instanceof FormData);
 
   await assert.rejects(postiz.beitragAnlegen({}), /HTTP 400 kaputt/);
+});
+
+test("Story: nur Instagram und Facebook, Übersicht im Hochformat", () => {
+  const bilder = { feed: [{ id: "f1" }], hoch: [{ id: "h1" }, { id: "h2" }] };
+  const kanaele = [
+    { id: "k1", identifier: "x" },
+    { id: "k2", identifier: "instagram" },
+    { id: "k3", identifier: "facebook" },
+    { id: "k4", identifier: "instagram-standalone", disabled: true },
+  ];
+  const s = story(abstimmung(1, 17), { kanaele, bilder, datum: "2026-10-18T13:00:00Z" });
+  assert.deepEqual(s.posts.map((p) => p.integration.id), ["k2", "k3"]);
+  assert.deepEqual(s.posts[0].settings, { __type: "instagram", post_type: "story", collaborators: [] });
+  assert.deepEqual(s.posts[1].settings, { __type: "facebook", post_type: "story" });
+  assert.deepEqual(s.posts[0].value[0].image, [{ id: "h1" }]);
+  assert.equal(story(abstimmung(1, 17), { kanaele: [{ id: "k1", identifier: "x" }], bilder }), null);
+});
+
+test("Postiz: zählt Anfragen fürs Stundenlimit", async () => {
+  const fetch = async () => new Response("[]", { status: 200 });
+  const postiz = postizClient({ url: "https://p", apiKey: "k", fetch });
+  await postiz.kanaele();
+  await postiz.kanaele();
+  assert.equal(postiz.anfragen, 2);
 });

@@ -1,5 +1,5 @@
 // Rendert die Sharepics: npm run grafiken -- [Abstimmungs-ID …]   (ohne IDs: die 3 neuesten mit Piraten-Position)
-// Ergebnis: out/<id>/1-uebersicht.png, out/<id>/2-abgeordnete.png, 3-abgeordnete.png …
+// Ergebnis: out/<id>/feed/1-uebersicht.png, 2-abgeordnete.png … und dasselbe in out/<id>/hoch/ (9:16)
 import { readFile } from "node:fs/promises";
 import { grafikenRendern, mitDeutschemTitel } from "../lib/render.mjs";
 
@@ -13,4 +13,4 @@ const auswahl = ids.length
   : abstimmungen.filter((a) => a.piraten.position).slice(0, 3);
 
 const ergebnis = await grafikenRendern(await mitDeutschemTitel(auswahl), personen);
-for (const pngs of Object.values(ergebnis)) for (const png of pngs) console.log(png);
+for (const formate of Object.values(ergebnis)) for (const pngs of Object.values(formate)) for (const png of pngs) console.log(png);

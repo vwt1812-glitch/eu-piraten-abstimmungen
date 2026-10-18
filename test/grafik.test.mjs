@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { uebersichtHtml, abgeordneteFolien, nachname, slug, GESICHTER_PRO_FOLIE } from "../lib/grafik.mjs";
+import { uebersichtHtml, abgeordneteFolien, nachname, slug, titelKuerzen, FORMATE, GESICHTER_PRO_FOLIE } from "../lib/grafik.mjs";
 
 function abstimmung(parteien) {
   const abgeordnete = [];
@@ -50,4 +50,22 @@ test("Abgeordnete: Parteien werden auf möglichst wenige Folien verteilt, nie ge
   }
   const gesamt = folien.join("").match(/<figure>/g).length;
   assert.equal(gesamt, a.abgeordnete.length + 1);
+});
+
+test("Hochformat: Seitengröße und Format-Klasse", () => {
+  const html = uebersichtHtml(abstimmung([["CDU", 3]]), { titel: "T", css: "", format: FORMATE.hoch });
+  assert.match(html, /width:1080px;height:1920px/);
+  assert.match(html, /class="karte format-hoch"/);
+  const feed = abgeordneteFolien(abstimmung([["CDU", 3]]), { titel: "T", personen: {}, css: "" })[0];
+  const hoch = abgeordneteFolien(abstimmung([["CDU", 3]]), { titel: "T", personen: {}, css: "", format: FORMATE.hoch })[0];
+  const groesse = (h) => Number(h.match(/--gesicht:(\d+)px/)[1]);
+  assert.ok(groesse(hoch) > groesse(feed));
+});
+
+test("Sehr lange Titel werden am Wortende gekürzt", () => {
+  const lang = "Wort ".repeat(60).trim();
+  const k = titelKuerzen(lang);
+  assert.ok(k.length <= 202);
+  assert.match(k, /Wort …$/);
+  assert.equal(titelKuerzen("kurz"), "kurz");
 });

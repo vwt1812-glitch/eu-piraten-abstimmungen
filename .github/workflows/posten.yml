@@ -32,6 +32,10 @@ jobs:
 
       - run: npx playwright install --with-deps chromium
 
+      - name: Deutsche Titel von check-some-votes.eu
+        continue-on-error: true # ohne neue Titel wird trotzdem gepostet, was schon einen hat
+        run: npm run titel
+
       - name: Porträts laden
         run: npm run portraets
 
@@ -42,10 +46,10 @@ jobs:
           POSTIZ_API_KEY: ${{ secrets.POSTIZ_API_KEY }}
         run: npm run posten -- ${{ inputs.trocken && '--trocken' || '' }} | tee -a "$GITHUB_STEP_SUMMARY"
 
-      - name: Gepostetes merken
+      - name: Gepostetes und Titel merken
         if: always()
         run: |
-          git add data/gepostet.json 2>/dev/null || true
+          git add data/gepostet.json data/titel_auto.json 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "Keine Änderungen."
             exit 0

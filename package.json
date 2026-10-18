@@ -5,11 +5,12 @@
   "scripts": {
     "abrufen": "node scripts/abrufen.mjs",
     "auswerten": "node scripts/auswerten.mjs",
+    "titel": "node scripts/titel.mjs",
     "portraets": "node scripts/portraets.mjs",
     "grafiken": "node scripts/grafiken.mjs",
     "vorschau": "node scripts/vorschau.mjs",
-    "test": "node --test test/*.test.mjs",
-    "posten": "node scripts/posten.mjs"
+    "posten": "node scripts/posten.mjs",
+    "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
     "@fontsource/inter": "5.3.0",

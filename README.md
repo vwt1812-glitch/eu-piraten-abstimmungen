@@ -24,7 +24,9 @@ Daten: [HowTheyVote.eu](https://howtheyvote.eu) (namentliche Abstimmungen, wöch
 | `assets/logos/` | Parteilogos (siehe unten) |
 | `data/abstimmungen.json` | Ergebnis – automatisch, **nicht von Hand bearbeiten** |
 | `data/abgeordnete.json` | Namen der Abgeordneten – automatisch |
-| `data/titel.json` | deutsche Titel, von Hand: `{"198216": "Deutscher Titel"}` |
+| `data/titel_auto.json` | deutsche Titel von check-some-votes.eu – automatisch |
+| `data/titel.json` | deutsche Titel von Hand, haben Vorrang: `{"198216": "Kürzerer Titel"}` |
+| `scripts/titel.mjs`, `lib/titel.mjs` | holt die deutschen Titel und ordnet sie zu |
 | `data/gepostet.json` | was bereits an Postiz ging – automatisch |
 | `lib/auswahl.mjs`, `lib/beitrag.mjs`, `lib/postiz.mjs` | was wann gepostet wird, Texte je Plattform, Postiz-API |
 | `scripts/posten.mjs` | plant neue Abstimmungen in Postiz ein |
@@ -33,6 +35,7 @@ Daten: [HowTheyVote.eu](https://howtheyvote.eu) (namentliche Abstimmungen, wöch
 npm run abrufen     # ~105 MB Download
 npm run auswerten
 npm run vorschau -- 5
+npm run titel
 npm run portraets
 npm run grafiken -- 198216   # ohne ID: die 3 neuesten
 npm test
@@ -81,7 +84,9 @@ Nach der Prüfung eine Abstimmung fest entscheiden:
 
 ## Grafiken
 
-Pro Abstimmung entsteht ein Karussell im Format 1080×1350:
+Pro Abstimmung entsteht ein Karussell, jeweils im Format 1080×1350 (`out/<id>/feed/`, für Instagram, Facebook,
+X, Bluesky, Mastodon) und 1080×1920 (`out/<id>/hoch/`, für TikTok und Stories). Im Hochformat bleiben oben und
+unten Ränder frei, weil TikTok und Instagram dort Bedienelemente einblenden.
 
 1. **Übersicht** – Piraten-Kasten (Fragezeichen-Avatar, weil kein deutscher Pirat im EP sitzt), darunter alle
    deutschen Parteien mit Stimmenzahl und Mehrheitsvotum, unten das Gesamtergebnis.
@@ -95,6 +100,15 @@ Symbole: ✅ Dafür, ❌ Dagegen, ⊖ Enthaltung, N nicht abgestimmt, ✅|❌ Pa
 `piraten.svg` erscheint zusätzlich oben rechts in der Ecke jeder Grafik.
 
 Fotos: © Europäische Union (steht auf jeder Grafik).
+
+## Deutsche Titel
+
+HowTheyVote liefert nur englische Titel. `npm run titel` holt die offiziellen deutschen Titel des Europaparlaments
+von [check-some-votes.eu](https://check-some-votes.eu) (`/api/votes?lang=de`) und ordnet sie über Tag,
+Dokumentkürzel (z. B. `A10-0197/2026`) und Stimmenzahlen zu. Liefert check-some-votes nur den englischen Titel,
+wird nichts übernommen. Ergebnis: `data/titel_auto.json`.
+
+Ist ein offizieller Titel zu sperrig, in `data/titel.json` einen eigenen eintragen – der hat Vorrang.
 
 ## Posten über Postiz
 
@@ -111,12 +125,18 @@ Facebook, Instagram, TikTok. Andere werden übersprungen.
 Ablauf (Action **Posten**, täglich):
 
 1. Kandidaten: Hauptabstimmungen mit Piraten-Position, höchstens 21 Tage alt, noch nicht in `data/gepostet.json`.
-2. **Nur mit deutschem Titel** in `data/titel.json`. Fehlende Titel stehen im Protokoll des Laufs, fertig zum
-   Kopieren. So entscheidet ihr nebenbei, welche Abstimmungen überhaupt gepostet werden.
+2. **Nur mit deutschem Titel** (automatisch oder von Hand). Abstimmungen ohne stehen im Protokoll des Laufs,
+   fertig zum Kopieren für `data/titel.json`.
 3. Status `automatisch` → geplanter Post, neueste zuerst, höchstens 3 pro Tag und 12 pro Woche, im Abstand von
    2 Stunden. Status `pruefen` → **Entwurf** in Postiz; dort prüfen und freigeben.
 4. Pro Post: Text in passender Länge je Plattform (X 280, Bluesky 300, Mastodon/Threads 500, sonst lang),
-   alle Grafiken als Karussell mit Alternativtexten.
+   alle Grafiken als Karussell mit Alternativtexten – TikTok im Hochformat, sonst 4:5.
+5. Zusätzlich eine **Story** mit der Übersicht im Hochformat auf Instagram und Facebook (`stories` in
+   `config.json`, nur für geplante Posts, nicht für Entwürfe).
+
+Postiz erlaubt standardmäßig 30 API-Anfragen pro Stunde (`API_LIMIT` in der Postiz-Konfiguration). Eine
+Abstimmung braucht etwa 8 (6 Bilder, Post, Story). Mehr als `max_anfragen_pro_lauf` (28) schickt ein Lauf nicht;
+der Rest folgt am nächsten Tag.
 
 Limits und Abstand in `config.json` → `posten`. `tiktok_methode`: `DIRECT_POST` (sofort veröffentlichen, braucht
 eine von TikTok freigegebene App) oder `UPLOAD` (landet als Entwurf in der TikTok-App).
@@ -133,6 +153,5 @@ Vorschau ohne Postiz: `npm run posten -- --trocken` oder die Action mit Häkchen
 
 ## Geplant
 
-- deutsche Titel automatisch (HowTheyVote liefert nur englische; check-some-votes.eu hat deutsche Zusammenfassungen)
-- Hochformat 1080×1920 für TikTok und Stories
+- deutsche KI-Zusammenfassungen von check-some-votes.eu im Posttext
 - eine Übersichtsseite über GitHub Pages

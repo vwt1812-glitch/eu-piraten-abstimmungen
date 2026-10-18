@@ -202,3 +202,18 @@ footer {
 .legende { display: flex; align-items: center; gap: 6px; font-size: 18px; font-weight: 600; margin-top: 10px; flex-wrap: wrap; }
 .legende .badge { margin-left: 8px; }
 .legende .quelle { margin-left: auto; font-weight: 400; font-size: 15px; color: #555; }
+
+/* Hochformat 1080×1920 (TikTok, Stories): oben und unten blenden die Apps Bedienelemente ein,
+   dort steht nur Hintergrund. Seitlich etwas mehr Rand wegen der Buttons rechts. */
+.format-hoch header { padding: 150px 190px 48px 72px; }
+.format-hoch .ecklogo { top: 140px; right: 64px; }
+.format-hoch .piraten { margin: 40px 72px 0; padding: 26px 30px; }
+.format-hoch .piraten .avatar .foto { width: 150px; height: 150px; }
+.format-hoch .piraten .frage { font-size: 40px; }
+.format-hoch h2 { margin: 36px 72px 16px; font-size: 34px; }
+.format-hoch .parteien { margin: 0 72px; gap: 12px 18px; }
+.format-hoch .partei { height: 80px; }
+.format-hoch .abgeordnete { margin: 30px 56px 0; }
+.format-hoch footer { padding: 24px 72px 300px; }
+.format-hoch .legende { font-size: 20px; }
+.format-hoch .legende .quelle { margin-left: 0; width: 100%; margin-top: 8px; }

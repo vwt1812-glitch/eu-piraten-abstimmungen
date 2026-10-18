@@ -12,6 +12,9 @@
     "pro_woche": 12,
     "max_alter_tage": 21,
     "abstand_minuten": 120,
-    "tiktok_methode": "DIRECT_POST"
-  }
+    "tiktok_methode": "DIRECT_POST",
+    "max_anfragen_pro_lauf": 28,
+    "stories": true
+  },
+  "checksomevotes": "https://check-some-votes.eu"
 }
