@@ -206,7 +206,7 @@ figcaption {
   margin-top: 6px;
   font-size: 13px;
   font-weight: 600;
-  line-height: 1.1;
+  line-height: 1.3; /* genug Platz für Unterlängen (g, p, y) – overflow: hidden schneidet sonst ab */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -218,8 +218,8 @@ figcaption.zweizeilig {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
-  line-height: 1.05;
-  max-height: 2.1em;
+  line-height: 1.2;
+  max-height: 2.4em;
 }
 
 /* Fuß */
