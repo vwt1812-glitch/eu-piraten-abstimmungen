@@ -174,7 +174,7 @@ h2 {
 .gruppe {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: flex-start; /* Köpfe bleiben auf einer Linie, auch wenn ein Name zwei Zeilen braucht */
   gap: 4px 4px;
   background: #fff;
   border: 2px solid var(--rand);
@@ -210,6 +210,16 @@ figcaption {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+/* Zu lange Namen dürfen umbrechen (höchstens zwei Zeilen), z. B. „Von der / Schulenburg“. */
+figcaption.zweizeilig {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-height: 1.05;
+  max-height: 2.1em;
 }
 
 /* Fuß */
