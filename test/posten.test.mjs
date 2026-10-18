@@ -86,7 +86,9 @@ test("Beitrag: Kanäle, Texte und Einstellungen je Plattform", () => {
 test("Beitrag: Alternativtexte für alle Bilder", () => {
   const alt = alternativtexte(abstimmung(1, 17), 3);
   assert.equal(alt.length, 3);
-  assert.match(alt[0], /PIRATEN gestimmt: dafür\. Deutsche Parteien – CDU: dafür, AfD: dagegen/);
+  assert.match(alt[0], /PIRATEN gestimmt: dafür\. Deutsche Parteien – CDU: dafür; AfD: dagegen/);
+  const mitZahlen = alternativtexte({ ...abstimmung(1, 17), deutschland: [{ partei: "CDU", mehrheit: "FOR", FOR: 22, AGAINST: 0, ABSTENTION: 0, DID_NOT_VOTE: 1 }] }, 1);
+  assert.match(mitZahlen[0], /CDU: dafür \(22 dafür, 1 ohne Stimme\)/);
   assert.match(alt[2], /Teil 2 von 2/);
 });
 

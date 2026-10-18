@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { uebersichtHtml, abgeordneteFolien, nachname, slug, titelKuerzen, FORMATE, GESICHTER_PRO_FOLIE } from "../lib/grafik.mjs";
+import { uebersichtHtml, abgeordneteFolien, nachname, slug, titelKuerzen, FORMATE, GESICHTER_PRO_FOLIE, verteilung, verteilungText, verteilungWorte, nachLager } from "../lib/grafik.mjs";
 
 function abstimmung(parteien) {
   const abgeordnete = [];
@@ -68,4 +68,20 @@ test("Sehr lange Titel werden am Wortende gekürzt", () => {
   assert.ok(k.length <= 202);
   assert.match(k, /Wort …$/);
   assert.equal(titelKuerzen("kurz"), "kurz");
+});
+
+test("Verteilungsbalken: nur vorhandene Stimmen, proportional, Zahlen nur bei genug Platz", () => {
+  const html = verteilung({ FOR: 482, AGAINST: 41, ABSTENTION: 0, DID_NOT_VOTE: 20 }, { zahlenImBalken: true });
+  assert.equal((html.match(/class="segment/g) ?? []).length, 3);
+  assert.match(html, /flex-grow:482;[^>]*>482</);
+  assert.match(html, /flex-grow:41;[^>]*>41</); // 7,6 % – passt noch
+  assert.match(html, /flex-grow:20;[^>]*><\/span>/); // 3,7 % – ohne Zahl
+  assert.equal((verteilungText({ FOR: 22, AGAINST: 0, ABSTENTION: 0, DID_NOT_VOTE: 1 }).match(/class="zahl"/g) ?? []).length, 2);
+  assert.equal(verteilungWorte({ FOR: 22, ABSTENTION: 2, DID_NOT_VOTE: 1 }), "22 dafür, 2 Enthaltungen, 1 ohne Stimme");
+});
+
+test("Parteien nach Lager: dafür, gespalten, Enthaltung, dagegen, ohne Stimme – innerhalb nach Größe", () => {
+  const p = (partei, mehrheit, n) => ({ partei, mehrheit, FOR: n, AGAINST: 0, ABSTENTION: 0, DID_NOT_VOTE: 0 });
+  const sortiert = nachLager([p("A", "AGAINST", 9), p("B", "FOR", 2), p("C", "DID_NOT_VOTE", 1), p("D", "FOR", 20), p("E", "GESPALTEN", 4), p("F", "ABSTENTION", 3)]);
+  assert.deepEqual(sortiert.map((x) => x.partei), ["D", "B", "E", "F", "A", "C"]);
 });
