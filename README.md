@@ -74,7 +74,10 @@ der Kurzfassung, dem englischen Originaltitel und drei Knöpfen:
 - **✏️ Ändern** – der Bot fragt nach. Auf die Frage (oder die Vorschau) antworten mit
   - einem neuen Titel, einfach als Text,
   - `position: dafür` / `dagegen` / `enthaltung` – z. B. bei Kernenergie,
-  - `hinweis: …` – Begründung, erscheint im Post als „Abweichend von Markéta Gregorová: …“.
+  - `hinweis: …` – Begründung, erscheint im Post als „Abweichend von Markéta Gregorová: …“,
+  - `erklaerung: …` – eigener Text für „Worum geht es?“ statt der KI-Zusammenfassung (jede Zeile ein Stichpunkt,
+    ohne KI-Hinweis),
+  - `erklaerung: aus` – „Worum geht es?“ weglassen.
 
   Danach kommt eine neue Vorschau mit den Änderungen, wieder mit ✅/❌/✏️.
 

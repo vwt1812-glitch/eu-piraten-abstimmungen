@@ -130,3 +130,26 @@ test("Aktionen ausführen: Rückfrage wird der Abstimmung zugeordnet, Befehle ko
   assert.deepEqual(z.abstimmungen["100"].nachrichten, [10, 11, 12, 77]);
   assert.equal(gesendet[0].extra.reply_markup.force_reply, true);
 });
+
+test("Erklärung ändern: eigener Text (mehrere Stichpunkte) oder aus", () => {
+  assert.deepEqual(befehlAuswerten("erklaerung: Erstens.\nErklärung: Zweitens."), { erklaerung: ["Erstens.", "Zweitens."] });
+  assert.deepEqual(befehlAuswerten("erklaerung: aus"), { erklaerung: false });
+  assert.deepEqual(befehlAuswerten("erklaerung: aus\nerklaerung: Doch nicht"), { erklaerung: false });
+  assert.deepEqual(befehlAuswerten("Titel: Neu\nerklärung: Text"), { titel: "Neu", erklaerung: ["Text"] });
+
+  const a = { id: 1, titel: "T", referenzStimme: "FOR", zusammenfassung: ["KI-Text"], piraten: { position: "FOR", quelle: "referenz" } };
+  assert.equal(mitAenderungen(a, { erklaerung: false }).zusammenfassung, null);
+  const eigen = mitAenderungen(a, { erklaerung: ["Eigener Text"] });
+  assert.deepEqual(eigen.zusammenfassung, ["Eigener Text"]);
+  assert.equal(eigen.erklaerungEigen, true);
+  assert.deepEqual(mitAenderungen(a, { titel: "X" }).zusammenfassung, ["KI-Text"]);
+});
+
+test("Erklärung ändern per Antwort: Bestätigung zeigt die Stichpunkte", () => {
+  const z = zustand();
+  const aktionen = updatesVerarbeiten(z, [antwort(1, "erklaerung: Es geht um Blei.", 11)], CHAT);
+  assert.deepEqual(z.abstimmungen["100"].aenderungen, { erklaerung: ["Es geht um Blei."] });
+  assert.match(aktionen[0].text, /erklaerung: \n• Es geht um Blei\./);
+  updatesVerarbeiten(z, [antwort(2, "erklaerung: aus", 11)], CHAT);
+  assert.deepEqual(z.abstimmungen["100"].aenderungen, { erklaerung: false });
+});

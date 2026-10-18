@@ -97,6 +97,9 @@ test("Erklärung: höchstens zwei Stichpunkte, am Wortende gekürzt, mit KI-Hinw
   assert.match(mit, /Worum geht es\?/);
   assert.match(mit, /Es geht um &lt;Blei&gt;\./);
   assert.match(mit, /class="ki-quelle"/);
+  const eigen = uebersichtHtml({ ...abstimmung([["CDU", 3]]), zusammenfassung: ["Eigener Text."], erklaerungEigen: true }, { titel: "T", css: "" });
+  assert.match(eigen, /Eigener Text\./);
+  assert.doesNotMatch(eigen, /ki-quelle/);
   const ohne = uebersichtHtml(abstimmung([["CDU", 3]]), { titel: "T", css: "" });
   assert.doesNotMatch(ohne, /Worum geht es|ki-quelle/);
 });
