@@ -63,6 +63,9 @@ h1 {
   box-shadow: 0 0 0 5px var(--orange);
 }
 .ecklogo img { width: 82%; height: 82%; object-fit: contain; }
+/* Das Signet bringt seinen orangen Ring selbst mit. */
+.ecklogo:has(.signet) { box-shadow: none; background: #fff; }
+.ecklogo img.signet { width: 100%; height: 100%; }
 .ecklogo-leer {
   font-family: "Oswald", sans-serif;
   font-weight: 700;
@@ -110,7 +113,8 @@ h2 {
 .piraten .frage { font-family: "Oswald", sans-serif; font-size: 36px; font-weight: 500; margin: 10px 0 6px; }
 .piraten .frage b { color: var(--orange); font-weight: 700; text-transform: uppercase; }
 .piraten .hinweis { font-size: 18px; color: #555; }
-.piraten .partei-logo { height: 40px; }
+.piraten .partei-logo { height: 58px; }
+.piraten .partei-logo img.logo { height: 100%; width: auto; }
 
 /* Parteien */
 .parteien {

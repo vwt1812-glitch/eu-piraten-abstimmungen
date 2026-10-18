@@ -154,7 +154,7 @@ Symbole: ✅ Dafür, ❌ Dagegen, ⊖ Enthaltung, N nicht abgestimmt, ✅|❌ Pa
 
 **Parteilogos** als `assets/logos/<name>.svg` (oder `.png`/`.webp`), z. B. `cdu.svg`, `gruene.svg`,
 `freie-waehler.svg`, `die-partei.svg`, `oedp.svg`. Ohne Logo erscheint der Parteiname farbig.
-`piraten.svg` steht zusätzlich oben rechts in der Ecke jeder Grafik.
+`piraten.png` steht im Kasten der PIRATEN, das runde `piraten-signet.png` oben rechts in der Ecke jeder Grafik.
 
 ## Deutsche Titel
 
