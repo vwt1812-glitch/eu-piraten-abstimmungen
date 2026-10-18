@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 import { telegramClient } from "../lib/telegram.mjs";
 import { updatesVerarbeiten, aktionenAusfuehren, arbeitOffen, chatsAusUpdates } from "../lib/freigabe.mjs";
 import { faellig, heute } from "../lib/zeitplan.mjs";
+import { warnungenTexte } from "../lib/warnungen.mjs";
 
 const pfad = (p) => fileURLToPath(new URL("../" + p, import.meta.url));
 const json = async (p, standard) => JSON.parse(await readFile(pfad(p), "utf8").catch(() => JSON.stringify(standard)));
@@ -65,8 +66,28 @@ async function taeglicherLauf() {
       await schritt(name, args);
     } catch (e) {
       await melden(`⚠️ Täglicher Lauf: ${e.message}`);
-      if (!optional) return;
+      if (!optional) break;
     }
+  }
+  await warnungenSchicken();
+}
+
+// Unbekannte Parteien und fehlende Stimmen der Referenz-Abgeordneten – jede Warnung nur einmal.
+async function warnungenSchicken() {
+  try {
+    const { abstimmungen = [] } = await json("daten/abstimmungen.json", {});
+    const bot = await json("daten/bot.json", {});
+    const { texte, neu } = warnungenTexte(abstimmungen, {
+      personen: await json("daten/abgeordnete.json", {}),
+      referenzName: config.referenz.name,
+      gewarnt: bot.gewarnt ?? {},
+      sitzungstage: config.referenz.warnen_nach_sitzungstagen,
+    });
+    for (const text of texte) await melden(text);
+    bot.gewarnt = { ...bot.gewarnt, ...neu };
+    await speichern("daten/bot.json", bot);
+  } catch (e) {
+    console.error(`Warnungen: ${e.message}`);
   }
 }
 

@@ -49,7 +49,16 @@ Das Skript installiert Node.js 22, Chromium und Schriften, die Abhängigkeiten u
 | `sudo systemctl restart eu-piraten` | Dienst neu starten (z. B. nach Änderung der Zugangsdaten) |
 | `bash pi/aktualisieren.sh` | neuen Code von GitHub holen und neu starten |
 
-Fehler im täglichen Lauf oder beim Einplanen meldet der Bot in Telegram.
+Fehler im täglichen Lauf oder beim Einplanen meldet der Bot in Telegram, ebenso (jeweils einmal):
+
+- **Unbekannte Partei** – ein Abgeordneter ist zu einer Partei gewechselt, für die es noch keinen Anzeigenamen gibt.
+  Dann in `lib/parteien.mjs` (Name), `lib/grafik.mjs` (Farbe) und `assets/logos/` (Logo) ergänzen.
+- **Gregorová stimmt nicht mehr ab** – an den letzten 4 Abstimmungstagen keine Stimme (`config.json` → `referenz`
+  → `warnen_nach_sitzungstagen`). Solange gibt es keine Vorschläge. Ist sie ausgeschieden, unter `referenz` eine
+  andere Abgeordnete eintragen.
+
+Parteiwechsel, Ausscheiden und Nachrücken sonst brauchen nichts: HowTheyVote speichert die Partei zu jeder
+einzelnen Abstimmung, Nachrücker erscheinen automatisch mit Namen und Foto.
 
 Erzeugte Daten liegen auf dem Pi in `daten/`, Downloads in `cache/`, Grafiken in `out/` – alle drei sind nicht
 im Repository.

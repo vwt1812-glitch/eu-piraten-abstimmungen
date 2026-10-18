@@ -2,7 +2,8 @@
   "referenz": {
     "id": 197549,
     "name": "Markéta Gregorová",
-    "partei": "Piráti (CZ)"
+    "partei": "Piráti (CZ)",
+    "warnen_nach_sitzungstagen": 4
   },
   "land": "DEU",
   "seit": "2024-07-16",
