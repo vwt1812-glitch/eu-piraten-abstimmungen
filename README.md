@@ -7,8 +7,8 @@ daher vom Votum der tschechischen Piratin **Markéta Gregorová** (Piráti) abge
 deutschen PIRATEN anders stehen (z. B. Kernenergie), greifen Regeln aus `abweichungen.json`, und vor jedem Post
 entscheidet ein Mensch über Telegram.
 
-Daten: [HowTheyVote.eu](https://howtheyvote.eu) (namentliche Abstimmungen, wöchentlicher Export), deutsche Titel
-von [check-some-votes.eu](https://check-some-votes.eu), Fotos © Europäische Union.
+Daten: [HowTheyVote.eu](https://howtheyvote.eu) (namentliche Abstimmungen, wöchentlicher Export), deutsche Titel,
+Zusammenfassungen und Porträts über [check-some-votes.eu](https://check-some-votes.eu), Fotos © Europäische Union.
 
 ## Ablauf
 
@@ -196,7 +196,7 @@ haben Vorrang.
 | `scripts/abrufen.mjs` | lädt die Tabellen von HowTheyVote.eu nach `cache/` (~105 MB, nur bei neuem Export) |
 | `scripts/auswerten.mjs` | schreibt `daten/abstimmungen.json` und `daten/abgeordnete.json` |
 | `scripts/titel.mjs` | schreibt `daten/titel_auto.json` und `daten/zusammenfassungen.json` |
-| `scripts/portraets.mjs` | lädt die Porträts nach `cache/portraets/` |
+| `scripts/portraets.mjs` | lädt die Porträts nach `cache/portraets/` (von check-some-votes.eu, sonst vom EP) |
 | `scripts/posten.mjs` | Vorschauen nach Telegram, Freigegebenes nach Postiz |
 | `scripts/grafiken.mjs`, `scripts/vorschau.mjs` | Grafiken bzw. Posttexte zum Ansehen |
 | `lib/` | Auswertung, Regeln, Titel, Grafiken, Posttexte, Postiz und Kanalauswahl, Telegram, Freigabe |
