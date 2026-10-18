@@ -196,6 +196,7 @@ haben Vorrang.
 | `scripts/abrufen.mjs` | lädt die Tabellen von HowTheyVote.eu nach `cache/` (~105 MB, nur bei neuem Export) |
 | `scripts/auswerten.mjs` | schreibt `daten/abstimmungen.json` und `daten/abgeordnete.json` |
 | `scripts/titel.mjs` | schreibt `daten/titel_auto.json` und `daten/zusammenfassungen.json` |
+| `scripts/profil.mjs` | rendert Profilbild und Banner der Accounts nach `profil/` |
 | `scripts/portraets.mjs` | lädt die Porträts nach `cache/portraets/` (von check-some-votes.eu, sonst vom EP, zuletzt über Chromium; ohne Foto erscheinen Initialen) |
 | `scripts/posten.mjs` | Vorschauen nach Telegram, Freigegebenes nach Postiz |
 | `scripts/grafiken.mjs`, `scripts/vorschau.mjs` | Grafiken bzw. Posttexte zum Ansehen |

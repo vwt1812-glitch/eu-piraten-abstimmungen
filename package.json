@@ -11,6 +11,7 @@
     "grafiken": "node scripts/grafiken.mjs",
     "vorschau": "node scripts/vorschau.mjs",
     "posten": "node scripts/posten.mjs",
+    "profil": "node scripts/profil.mjs",
     "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
