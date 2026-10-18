@@ -1,0 +1,11 @@
+{
+  "name": "eu-piraten-abstimmungen",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "abrufen": "node scripts/abrufen.mjs",
+    "auswerten": "node scripts/auswerten.mjs",
+    "vorschau": "node scripts/vorschau.mjs",
+    "test": "node --test test/*.test.mjs"
+  }
+}
