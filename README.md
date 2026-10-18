@@ -1,6 +1,6 @@
-# EU-Piraten-Abstimmungen
+# Piraten-Check EU
 
-Wie stimmen die deutschen Abgeordneten im Europaparlament ab – und wie hätten die PIRATEN gestimmt?
+Code hinter den Accounts **Piraten-Check EU** (@PiratenCheckEU): Wie stimmen die deutschen Abgeordneten im Europaparlament ab – und wie hätten die PIRATEN gestimmt?
 
 Seit 2024 sitzt keine deutsche Piratin und kein deutscher Pirat im Europaparlament. Die Position der PIRATEN wird
 daher vom Votum der tschechischen Piratin **Markéta Gregorová** (Piráti) abgeleitet. Bei Themen, bei denen die
