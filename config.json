@@ -6,5 +6,12 @@
   },
   "land": "DEU",
   "seit": "2024-07-16",
-  "quelle": "https://github.com/HowTheyVote/data/releases/latest/download/"
+  "quelle": "https://github.com/HowTheyVote/data/releases/latest/download/",
+  "posten": {
+    "pro_tag": 3,
+    "pro_woche": 12,
+    "max_alter_tage": 21,
+    "abstand_minuten": 120,
+    "tiktok_methode": "DIRECT_POST"
+  }
 }

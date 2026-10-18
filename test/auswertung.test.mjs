@@ -83,7 +83,7 @@ test("Posttext: Langfassung enthält Parteien, Position und Quelle", () => {
   const text = posttextLang(BEISPIEL);
   assert.match(text, /16\.09\.2026/);
   assert.match(text, /✅ CDU\n❌ AfD\n⚪ BSW/);
-  assert.match(text, /So hätten die Piraten gestimmt: Dagegen\*/);
+  assert.match(text, /So hätten die PIRATEN gestimmt: Dagegen\*/);
   assert.match(text, /Abweichend von Markéta Gregorová/);
   assert.match(text, /howtheyvote\.eu\/votes\/195830/);
 });

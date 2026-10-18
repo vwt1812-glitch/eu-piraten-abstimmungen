@@ -25,6 +25,9 @@ Daten: [HowTheyVote.eu](https://howtheyvote.eu) (namentliche Abstimmungen, wöch
 | `data/abstimmungen.json` | Ergebnis – automatisch, **nicht von Hand bearbeiten** |
 | `data/abgeordnete.json` | Namen der Abgeordneten – automatisch |
 | `data/titel.json` | deutsche Titel, von Hand: `{"198216": "Deutscher Titel"}` |
+| `data/gepostet.json` | was bereits an Postiz ging – automatisch |
+| `lib/auswahl.mjs`, `lib/beitrag.mjs`, `lib/postiz.mjs` | was wann gepostet wird, Texte je Plattform, Postiz-API |
+| `scripts/posten.mjs` | plant neue Abstimmungen in Postiz ein |
 
 ```sh
 npm run abrufen     # ~105 MB Download
@@ -93,16 +96,43 @@ Symbole: ✅ Dafür, ❌ Dagegen, ⊖ Enthaltung, N nicht abgestimmt, ✅|❌ Pa
 
 Fotos: © Europäische Union (steht auf jeder Grafik).
 
+## Posten über Postiz
+
+Einmalig einrichten (GitHub → Settings → Secrets and variables → Actions):
+
+| Art | Name | Wert |
+|---|---|---|
+| Variable | `POSTIZ_URL` | Adresse der Postiz-Instanz, z. B. `https://postiz.example.org` (die API liegt unter `/api/public/v1`) |
+| Secret | `POSTIZ_API_KEY` | API-Key aus Postiz → Einstellungen → Public API |
+
+Gepostet wird auf alle in Postiz verbundenen Kanäle dieser Typen: X, Bluesky, Mastodon, Threads, Telegram,
+Facebook, Instagram, TikTok. Andere werden übersprungen.
+
+Ablauf (Action **Posten**, täglich):
+
+1. Kandidaten: Hauptabstimmungen mit Piraten-Position, höchstens 21 Tage alt, noch nicht in `data/gepostet.json`.
+2. **Nur mit deutschem Titel** in `data/titel.json`. Fehlende Titel stehen im Protokoll des Laufs, fertig zum
+   Kopieren. So entscheidet ihr nebenbei, welche Abstimmungen überhaupt gepostet werden.
+3. Status `automatisch` → geplanter Post, neueste zuerst, höchstens 3 pro Tag und 12 pro Woche, im Abstand von
+   2 Stunden. Status `pruefen` → **Entwurf** in Postiz; dort prüfen und freigeben.
+4. Pro Post: Text in passender Länge je Plattform (X 280, Bluesky 300, Mastodon/Threads 500, sonst lang),
+   alle Grafiken als Karussell mit Alternativtexten.
+
+Limits und Abstand in `config.json` → `posten`. `tiktok_methode`: `DIRECT_POST` (sofort veröffentlichen, braucht
+eine von TikTok freigegebene App) oder `UPLOAD` (landet als Entwurf in der TikTok-App).
+
+Vorschau ohne Postiz: `npm run posten -- --trocken` oder die Action mit Häkchen „Nur Vorschau“ starten.
+
 ## Automatische Aktualisierung
 
 | Action | Wann | Was |
 |---|---|---|
 | **Abstimmungen aktualisieren** | sonntags | lädt den Export, schreibt `data/abstimmungen.json`, Vorschau in der Zusammenfassung des Laufs, Grafiken der 3 neuesten Abstimmungen als Download („Artifacts“) |
+| **Posten** | täglich | plant neue Abstimmungen in Postiz ein, merkt sie in `data/gepostet.json` |
 | **Tests** | bei Pull Requests und Pushes auf `main` | prüft CSV-Leser, Auswertung, Regeln, Posttexte |
 
 ## Geplant
 
-- Posten über Postiz (Langfassung Mastodon, Kurzfassung Bluesky), Abstimmungen mit `pruefen` nur nach Freigabe
 - deutsche Titel automatisch (HowTheyVote liefert nur englische; check-some-votes.eu hat deutsche Zusammenfassungen)
 - Hochformat 1080×1920 für TikTok und Stories
 - eine Übersichtsseite über GitHub Pages

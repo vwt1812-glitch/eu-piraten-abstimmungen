@@ -1,0 +1,57 @@
+name: Posten
+
+on:
+  schedule:
+    - cron: "41 7 * * *" # täglich gegen 9:41 Uhr
+  workflow_dispatch:
+    inputs:
+      trocken:
+        description: "Nur Vorschau, nichts an Postiz schicken"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daten
+  cancel-in-progress: false
+
+jobs:
+  posten:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx playwright install --with-deps chromium
+
+      - name: Porträts laden
+        run: npm run portraets
+
+      - name: In Postiz einplanen
+        shell: bash # mit pipefail, damit ein Fehler trotz tee auffällt
+        env:
+          POSTIZ_URL: ${{ vars.POSTIZ_URL }}
+          POSTIZ_API_KEY: ${{ secrets.POSTIZ_API_KEY }}
+        run: npm run posten -- ${{ inputs.trocken && '--trocken' || '' }} | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Gepostetes merken
+        if: always()
+        run: |
+          git add data/gepostet.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "Keine Änderungen."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Gepostete Abstimmungen merken"
+          git pull --rebase
+          git push

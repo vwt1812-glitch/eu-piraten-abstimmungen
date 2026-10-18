@@ -8,7 +8,8 @@
     "portraets": "node scripts/portraets.mjs",
     "grafiken": "node scripts/grafiken.mjs",
     "vorschau": "node scripts/vorschau.mjs",
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "posten": "node scripts/posten.mjs"
   },
   "dependencies": {
     "@fontsource/inter": "5.3.0",
