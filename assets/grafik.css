@@ -161,6 +161,8 @@ h2 {
 .gruppe-piraten { border: 3px solid var(--orange); }
 .gruppe-logo { height: var(--gesicht); display: flex; align-items: center; padding: 0 6px; }
 .gruppe-logo .logo-text { font-size: 18px; padding: 3px 8px; }
+/* Logos sollen die Gesichter nicht verdrängen: höchstens 120 px breit und 55 % der Gesichtshöhe hoch. */
+.gruppe-logo img.logo { max-width: 120px; max-height: calc(var(--gesicht) * 0.55); width: auto; height: auto; }
 figure { margin: 0; width: var(--gesicht); text-align: center; }
 .kopf { position: relative; width: var(--gesicht); height: var(--gesicht); }
 .kopf .foto { width: 100%; height: 100%; border-radius: 6px; object-fit: cover; object-position: top; display: block; }
