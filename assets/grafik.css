@@ -105,15 +105,6 @@ h2 {
 .format-hoch .erklaerung h3 { font-size: 26px; }
 .format-hoch .erklaerung li { font-size: 21px; }
 
-/* Quadratisches Logo mit Parteiname daneben */
-.logo-mit-name { display: flex; align-items: center; gap: 8px; height: 100%; max-width: 100%; }
-.logo-mit-name img { height: 100%; width: auto; flex: none; }
-.logo-mit-name span { font-family: "Oswald", sans-serif; font-weight: 600; font-size: 22px; line-height: 1; color: #1d1d1b; white-space: nowrap; }
-.partei .logo-mit-name { gap: 6px; }
-.partei .logo-mit-name span { font-size: 19px; }
-.gruppe-logo .logo-mit-name { height: calc(var(--gesicht) * 0.55); }
-.gruppe-logo .logo-mit-name span { font-size: 18px; }
-
 /* Piraten-Kasten */
 .piraten {
   margin: 30px 48px 0;
