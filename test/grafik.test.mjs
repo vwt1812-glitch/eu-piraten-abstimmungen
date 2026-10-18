@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { uebersichtHtml, abgeordneteFolien, nachname, slug, titelKuerzen, FORMATE, GESICHTER_PRO_FOLIE, verteilung, verteilungText, verteilungWorte, nachLager } from "../lib/grafik.mjs";
+import { uebersichtHtml, abgeordneteFolien, nachname, slug, titelKuerzen, FORMATE, GESICHTER_PRO_FOLIE, verteilung, verteilungText, verteilungWorte, nachLager, erklaerungPunkte } from "../lib/grafik.mjs";
 
 function abstimmung(parteien) {
   const abgeordnete = [];
@@ -84,4 +84,19 @@ test("Parteien nach Lager: dafür, gespalten, Enthaltung, dagegen, ohne Stimme �
   const p = (partei, mehrheit, n) => ({ partei, mehrheit, FOR: n, AGAINST: 0, ABSTENTION: 0, DID_NOT_VOTE: 0 });
   const sortiert = nachLager([p("A", "AGAINST", 9), p("B", "FOR", 2), p("C", "DID_NOT_VOTE", 1), p("D", "FOR", 20), p("E", "GESPALTEN", 4), p("F", "ABSTENTION", 3)]);
   assert.deepEqual(sortiert.map((x) => x.partei), ["D", "B", "E", "F", "A", "C"]);
+});
+
+test("Erklärung: höchstens zwei Stichpunkte, am Wortende gekürzt, mit KI-Hinweis in der Quelle", () => {
+  const lang = "Wort ".repeat(60).trim();
+  const punkte = erklaerungPunkte(["Kurz.", lang, "Drei."]);
+  assert.equal(punkte.length, 2);
+  assert.equal(punkte[0], "Kurz.");
+  assert.ok(punkte[1].length <= 152 && punkte[1].endsWith("Wort …"));
+
+  const mit = uebersichtHtml({ ...abstimmung([["CDU", 3]]), zusammenfassung: ["Es geht um <Blei>."] }, { titel: "T", css: "" });
+  assert.match(mit, /Worum geht es\?/);
+  assert.match(mit, /Es geht um &lt;Blei&gt;\./);
+  assert.match(mit, /class="ki-quelle"/);
+  const ohne = uebersichtHtml(abstimmung([["CDU", 3]]), { titel: "T", css: "" });
+  assert.doesNotMatch(ohne, /Worum geht es|ki-quelle/);
 });

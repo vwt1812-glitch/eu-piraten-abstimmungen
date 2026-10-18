@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { titelZuordnen, abstimmungenLaden } from "../lib/titel.mjs";
+import { titelZuordnen, abstimmungenLaden, zuordnen, zusammenfassungLaden } from "../lib/titel.mjs";
 
 function htv(id, tag, referenz, [f, a, e]) {
   return { id, zeitpunkt: `2026-10-${tag} 12:00:00`, referenz, stimmen: { FOR: f, AGAINST: a, ABSTENTION: e } };
@@ -42,4 +42,22 @@ test("Laden: alle Seiten, deutsche Titel per lang=de", async () => {
   const votes = await abstimmungenLaden({ basis: "https://check-some-votes.eu/", lang: "de", von: "2026-10-01", bis: "2026-10-18", fetch });
   assert.deepEqual(votes.map((v) => v.id), ["v1", "v2"]);
   assert.equal(urls[0], "https://check-some-votes.eu/api/votes?lang=de&start_date=2026-10-01&end_date=2026-10-18&page=1&page_size=100");
+});
+
+test("Zuordnung liefert die ID bei check-some-votes, auch wenn es nur einen englischen Titel gibt", () => {
+  const deutsch = [csv("e1", "08", "A1", [10, 10, 10], "Same title")];
+  const m = zuordnen([htv(1, "08", "A1", [10, 10, 10])], deutsch);
+  assert.equal(m.get(1).id, "e1");
+});
+
+test("Zusammenfassung: nur deutsche Stichpunkte, sonst null", async () => {
+  const antwort = (summary) => async () => new Response(JSON.stringify({ summary }), { status: 200 });
+  const basis = "https://check-some-votes.eu";
+  assert.deepEqual(await zusammenfassungLaden({ basis, csvId: "x", fetch: antwort({ language: "de", points: [" Erstens. ", "Zweitens."] }) }), ["Erstens.", "Zweitens."]);
+  assert.equal(await zusammenfassungLaden({ basis, csvId: "x", fetch: antwort({ language: "en", points: ["First."] }) }), null);
+  assert.equal(await zusammenfassungLaden({ basis, csvId: "x", fetch: antwort(null) }), null);
+
+  let url;
+  await zusammenfassungLaden({ basis, csvId: "eli/dl/event/1 2", fetch: async (u) => { url = u; return new Response("{}"); } });
+  assert.equal(url, "https://check-some-votes.eu/api/v1/social/vote-card.json?vote=eli%2Fdl%2Fevent%2F1%202&lang=de");
 });

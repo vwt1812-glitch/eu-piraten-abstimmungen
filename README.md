@@ -162,6 +162,13 @@ Symbole: ✅ Dafür, ❌ Dagegen, ⊖ Enthaltung, N nicht abgestimmt, ✅|❌ Pa
 (`/api/votes?lang=de`) und ordnet sie über Tag, Dokumentkürzel (z. B. `A10-0197/2026`) und Stimmenzahlen zu.
 Liefert check-some-votes nur den englischen Titel, wird nichts übernommen.
 
+Außerdem holt `npm run titel` die **deutsche KI-Zusammenfassung** von check-some-votes
+(`/api/v1/social/vote-card.json`) nach `daten/zusammenfassungen.json`. Die gibt es nur für Abstimmungen mit
+Bericht; fehlende werden täglich erneut gefragt. Auf der Übersicht steht sie als „Worum geht es?“ (im Feed bis zu
+zwei, im Hochformat bis zu drei Stichpunkte, gekennzeichnet als KI-generiert). Wird es zu eng, fallen beim Rendern
+erst Stichpunkte und zuletzt die ganze Erklärung weg – die Ergebnisse der Parteien haben Vorrang. In der
+Telegram-Vorschau steht die Zusammenfassung vollständig.
+
 Eigene Titel: in Telegram per ✏️ Ändern, oder dauerhaft in `titel.json` (`{"198216": "Kürzerer Titel"}`) – die
 haben Vorrang.
 
@@ -175,7 +182,7 @@ haben Vorrang.
 | `scripts/bot.mjs` | der Dienst: Telegram, täglicher Lauf, Einplanen |
 | `scripts/abrufen.mjs` | lädt die Tabellen von HowTheyVote.eu nach `cache/` (~105 MB, nur bei neuem Export) |
 | `scripts/auswerten.mjs` | schreibt `daten/abstimmungen.json` und `daten/abgeordnete.json` |
-| `scripts/titel.mjs` | schreibt `daten/titel_auto.json` |
+| `scripts/titel.mjs` | schreibt `daten/titel_auto.json` und `daten/zusammenfassungen.json` |
 | `scripts/portraets.mjs` | lädt die Porträts nach `cache/portraets/` |
 | `scripts/posten.mjs` | Vorschauen nach Telegram, Freigegebenes nach Postiz |
 | `scripts/grafiken.mjs`, `scripts/vorschau.mjs` | Grafiken bzw. Posttexte zum Ansehen |
@@ -197,5 +204,4 @@ Auf GitHub laufen bei jedem Push nur die Tests.
 
 ## Geplant
 
-- deutsche KI-Zusammenfassungen von check-some-votes.eu im Posttext
 - eine Übersichtsseite über GitHub Pages

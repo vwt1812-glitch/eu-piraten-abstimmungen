@@ -96,6 +96,15 @@ h2 {
   white-space: nowrap;
 }
 
+/* Worum geht es? (Zusammenfassung von check-some-votes) */
+.erklaerung { margin: 22px 48px 0; padding: 12px 18px 12px 20px; background: #fff; border-left: 6px solid var(--blau); border-radius: 0 10px 10px 0; }
+.erklaerung h3 { margin: 0 0 4px; font-family: "Oswald", sans-serif; font-size: 22px; font-weight: 600; text-transform: uppercase; color: var(--blau); }
+.erklaerung ul { margin: 0; padding-left: 20px; }
+.erklaerung li { font-size: 17px; line-height: 1.32; margin: 2px 0; }
+.format-hoch .erklaerung { margin: 30px 72px 0; padding: 16px 22px 16px 24px; }
+.format-hoch .erklaerung h3 { font-size: 26px; }
+.format-hoch .erklaerung li { font-size: 21px; }
+
 /* Piraten-Kasten */
 .piraten {
   margin: 30px 48px 0;
@@ -236,3 +245,12 @@ footer .quelle { font-size: 14px; color: #666; margin-top: 6px; }
 .format-hoch .abgeordnete { margin: 30px 56px 0; }
 .format-hoch footer { padding: 24px 72px 300px; }
 .format-hoch .legende { font-size: 20px; gap: 14px 22px; }
+
+/* Mit Erklärung darüber wird der Kasten der PIRATEN kompakter. */
+.erklaerung + .piraten { margin-top: 14px; padding: 12px 20px; gap: 18px; }
+.erklaerung + .piraten .avatar .foto { width: 96px; height: 96px; }
+.erklaerung + .piraten .partei-logo { height: 64px; }
+.erklaerung + .piraten .frage { font-size: 32px; margin: 4px 0 2px; }
+.erklaerung + .piraten .hinweis { font-size: 16px; }
+.erklaerung + .piraten > .badge { width: 92px; height: 92px; }
+.erklaerung + .piraten + h2 { margin-top: 18px; }
