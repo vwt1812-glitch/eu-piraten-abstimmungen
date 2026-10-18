@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const pfad = (p) => fileURLToPath(new URL("../" + p, import.meta.url));
-const personen = JSON.parse(await readFile(pfad("data/abgeordnete.json"), "utf8"));
+const personen = JSON.parse(await readFile(pfad("daten/abgeordnete.json"), "utf8"));
 await mkdir(pfad("cache/portraets"), { recursive: true });
 
 let neu = 0;

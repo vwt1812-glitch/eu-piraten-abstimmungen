@@ -1,4 +1,5 @@
-// Lädt die benötigten Tabellen von HowTheyVote.eu nach cache/.
+// Lädt die benötigten Tabellen von HowTheyVote.eu nach cache/ – nur wenn es einen neuen Export gibt
+// (HowTheyVote aktualisiert wöchentlich). --immer lädt in jedem Fall.
 import { mkdir, writeFile, readFile } from "node:fs/promises";
 
 const config = JSON.parse(await readFile(new URL("../config.json", import.meta.url)));
@@ -20,6 +21,12 @@ const stand = await fetch(config.quelle + "last_updated.txt");
 if (!stand.ok) throw new Error(`last_updated.txt: HTTP ${stand.status}`);
 const zeitpunkt = (await stand.text()).trim();
 console.log(`Export vom ${zeitpunkt}`);
+
+const vorhanden = (await readFile(new URL("last_updated.txt", ziel), "utf8").catch(() => "")).trim();
+if (vorhanden === zeitpunkt && !process.argv.includes("--immer")) {
+  console.log("Schon aktuell – nichts zu laden.");
+  process.exit(0);
+}
 
 for (const name of TABELLEN) {
   const res = await fetch(config.quelle + name + ".csv.gz");

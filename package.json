@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "start": "node scripts/bot.mjs",
     "abrufen": "node scripts/abrufen.mjs",
     "auswerten": "node scripts/auswerten.mjs",
     "titel": "node scripts/titel.mjs",

@@ -1,0 +1,14 @@
+# Zugangsdaten für den Dienst eu-piraten – liegt als /etc/eu-piraten.env (nur root lesbar).
+# Nach Änderungen: sudo systemctl restart eu-piraten
+
+# Postiz: Adresse der Instanz (API unter /api/public/v1) und API-Key aus Postiz → Einstellungen → Public API
+POSTIZ_URL=https://postiz.example.org
+POSTIZ_API_KEY=
+
+# Telegram-Bot von @BotFather (/newbot)
+TELEGRAM_BOT_TOKEN=
+# Leer lassen, Dienst starten, dem Bot schreiben – er antwortet mit der Chat-ID. Dann hier eintragen.
+TELEGRAM_CHAT_ID=
+
+# Chromium aus apt (trägt pi/install.sh ein)
+CHROMIUM_PATH=/usr/bin/chromium

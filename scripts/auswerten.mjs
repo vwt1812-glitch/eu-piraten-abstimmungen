@@ -1,10 +1,26 @@
-// Wertet die Hauptabstimmungen seit config.seit aus und schreibt data/abstimmungen.json.
-import { readFile, writeFile } from "node:fs/promises";
+// Wertet die Hauptabstimmungen seit config.seit aus und schreibt daten/abstimmungen.json.
+import { readFile, writeFile, mkdir, stat } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { leseCsv, leseAlle } from "../lib/csv.mjs";
 import { abstimmungAuswerten } from "../lib/auswertung.mjs";
 
+// Wie make: nur neu auswerten, wenn Daten, Regeln oder Konfiguration neuer sind als das Ergebnis (--immer erzwingt).
+async function aktuell(ergebnis, quellen) {
+  const zeit = async (p) => (await stat(p).catch(() => null))?.mtimeMs ?? null;
+  const ziel = await zeit(ergebnis);
+  if (ziel === null) return false;
+  for (const q of quellen) if ((await zeit(q)) > ziel) return false;
+  return true;
+}
+
 const pfad = (p) => fileURLToPath(new URL("../" + p, import.meta.url));
+if (!process.argv.includes("--immer") &&
+    await aktuell(pfad("daten/abstimmungen.json"), ["cache/last_updated.txt", "abweichungen.json", "config.json"].map(pfad))) {
+  console.log("Auswertung ist aktuell.");
+  process.exit(0);
+}
+await mkdir(pfad("daten"), { recursive: true });
+
 const config = JSON.parse(await readFile(pfad("config.json")));
 const regeln = JSON.parse(await readFile(pfad("abweichungen.json")));
 const cache = (name) => pfad(`cache/${name}.csv.gz`);
@@ -75,12 +91,12 @@ const abgeordnete = {};
 for await (const m of leseCsv(cache("members"))) {
   if (ids.has(Number(m.id))) abgeordnete[m.id] = { vorname: m.first_name, nachname: m.last_name };
 }
-await writeFile(pfad("data/abgeordnete.json"), JSON.stringify(abgeordnete, null, 1) + "\n");
+await writeFile(pfad("daten/abgeordnete.json"), JSON.stringify(abgeordnete, null, 1) + "\n");
 
 const stand = (await readFile(pfad("cache/last_updated.txt"), "utf8").catch(() => "")).trim() || null;
 // Eine Zeile pro Abstimmung: kompakt, aber mit lesbaren Diffs.
 const zeilen = ergebnis.map((a) => " " + JSON.stringify(a)).join(",\n");
-await writeFile(pfad("data/abstimmungen.json"), `{"stand":${JSON.stringify(stand)},"abstimmungen":[\n${zeilen}\n]}\n`);
+await writeFile(pfad("daten/abstimmungen.json"), `{"stand":${JSON.stringify(stand)},"abstimmungen":[\n${zeilen}\n]}\n`);
 
 const status = Object.groupBy(ergebnis, (a) => a.piraten.status);
 for (const [k, v] of Object.entries(status)) console.log(`${k}: ${v.length}`);

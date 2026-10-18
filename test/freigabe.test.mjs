@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { befehlAuswerten, mitAenderungen, updatesVerarbeiten, arbeitOffen, chatsAusUpdates, vorschauText, knoepfe } from "../lib/freigabe.mjs";
+import { befehlAuswerten, mitAenderungen, updatesVerarbeiten, aktionenAusfuehren, arbeitOffen, chatsAusUpdates, vorschauText, knoepfe } from "../lib/freigabe.mjs";
 import { naechsterTermin } from "../lib/veroeffentlichen.mjs";
 import { telegramClient } from "../lib/telegram.mjs";
 
@@ -109,4 +109,24 @@ test("Telegram: Bilder als Album, Fehler mit Beschreibung", async () => {
   const media = JSON.parse(aufrufe[0].opt.body.get("media"));
   assert.deepEqual(media.map((m) => m.media), ["attach://bild0", "attach://bild1"]);
   await assert.rejects(t.nachricht(CHAT, "x"), /chat not found/);
+});
+
+test("Befehle wie /status gehen an den Bot, auch mit @Botname", () => {
+  const a = updatesVerarbeiten(zustand(), [antwort(1, "/status"), antwort(2, "/Jetzt@PiratenBot bitte")], CHAT);
+  assert.deepEqual(a.map((x) => x.befehl), ["/status", "/jetzt"]);
+});
+
+test("Aktionen ausführen: Rückfrage wird der Abstimmung zugeordnet, Befehle kommen zurück", async () => {
+  const gesendet = [];
+  const telegram = {
+    callbackBeantworten: async () => {},
+    knoepfeEntfernen: async () => {},
+    nachricht: async (chat, text, extra) => { gesendet.push({ chat, text, extra }); return { message_id: 77 }; },
+  };
+  const z = zustand();
+  const aktionen = updatesVerarbeiten(z, [knopf(1, "aendern:100", 12), antwort(2, "/status")], CHAT);
+  const befehle = await aktionenAusfuehren(telegram, CHAT, z, aktionen);
+  assert.deepEqual(befehle.map((b) => b.befehl), ["/status"]);
+  assert.deepEqual(z.abstimmungen["100"].nachrichten, [10, 11, 12, 77]);
+  assert.equal(gesendet[0].extra.reply_markup.force_reply, true);
 });

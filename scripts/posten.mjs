@@ -4,16 +4,16 @@
 //   npm run posten                nur Offenes erledigen: Freigegebenes einplanen, Geändertes neu vorlegen
 //   npm run posten -- --trocken   nur Vorschau, nichts wird verschickt
 //
-// Mit Telegram:  neue Abstimmungen → Vorschau mit ✅/❌/✏️ (data/freigabe.json); erst nach ✅ geht es an Postiz.
+// Mit Telegram:  neue Abstimmungen → Vorschau mit ✅/❌/✏️ (daten/freigabe.json); erst nach ✅ geht es an Postiz.
 // Ohne Telegram: „automatisch“ → geplanter Post, „pruefen“ → Entwurf in Postiz.
-// Ohne deutschen Titel (data/titel.json oder data/titel_auto.json) wird nichts vorgeschlagen.
-// Bereits Gepostetes steht in data/gepostet.json und wird nie doppelt angelegt.
-import { readFile, writeFile } from "node:fs/promises";
+// Ohne deutschen Titel (titel.json oder daten/titel_auto.json) wird nichts vorgeschlagen.
+// Bereits Gepostetes steht in daten/gepostet.json und wird nie doppelt angelegt.
+import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { auswahl } from "../lib/auswahl.mjs";
 import { beitrag } from "../lib/beitrag.mjs";
 import { grafikenRendern, mitDeutschemTitel, deutscheTitel } from "../lib/render.mjs";
-import { postizVerbinden, passtInsLimit, veroeffentlichen, naechsterTermin } from "../lib/veroeffentlichen.mjs";
+import { postizVerbinden, passtInsLimit, veroeffentlichen, naechsterTermin, anfragenLetzteStunde, MINDESTENS_FREI } from "../lib/veroeffentlichen.mjs";
 import { telegramClient } from "../lib/telegram.mjs";
 import { mitAenderungen, vorschauText, knoepfe } from "../lib/freigabe.mjs";
 
@@ -21,11 +21,12 @@ const pfad = (p) => fileURLToPath(new URL("../" + p, import.meta.url));
 const json = async (p, standard) => JSON.parse(await readFile(pfad(p), "utf8").catch(() => JSON.stringify(standard)));
 const speichern = (p, daten) => writeFile(pfad(p), JSON.stringify(daten, null, 1) + "\n");
 
+await mkdir(pfad("daten"), { recursive: true });
 const config = await json("config.json");
-const { abstimmungen } = await json("data/abstimmungen.json");
-const personen = await json("data/abgeordnete.json");
-const gepostet = await json("data/gepostet.json", {});
-const freigabe = await json("data/freigabe.json", { offset: 0, abstimmungen: {} });
+const { abstimmungen } = await json("daten/abstimmungen.json");
+const personen = await json("daten/abgeordnete.json");
+const gepostet = await json("daten/gepostet.json", {});
+const freigabe = await json("daten/freigabe.json", { offset: 0, abstimmungen: {} });
 const o = config.posten;
 
 const { POSTIZ_URL, POSTIZ_API_KEY, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID } = process.env;
@@ -48,7 +49,7 @@ if (neue) {
     zaehlt: mitTelegram ? (g) => g.typ === "vorschlag" : undefined,
   });
   if (r.ohneTitel.length) {
-    console.log(`\n${r.ohneTitel.length} Abstimmungen ohne deutschen Titel (check-some-votes.eu hatte keinen) – bei Bedarf in data/titel.json eintragen:`);
+    console.log(`\n${r.ohneTitel.length} Abstimmungen ohne deutschen Titel (check-some-votes.eu hatte keinen) – bei Bedarf in titel.json eintragen:`);
     for (const a of r.ohneTitel) console.log(`  "${a.id}": "",   // ${a.zeitpunkt.slice(0, 10)} ${a.titel}`);
     console.log();
   }
@@ -91,7 +92,20 @@ if (trocken) {
   process.exit(0);
 }
 
-const zuRendern = [...new Set([...vorschlagen, ...freigegeben, ...direkt.map((k) => String(k.id))])];
+// Postiz-Stundenlimit über alle Läufe: reicht es nicht für eine Abstimmung, wird gar nicht erst gerendert.
+const postizVerlauf = await json("daten/postiz.json", { anfragen: [] });
+const bisher = anfragenLetzteStunde(postizVerlauf.anfragen);
+let anPostiz = [
+  ...freigegeben.map((id) => ({ id, typ: "schedule" })),
+  ...direkt.map((k) => ({ id: String(k.id), typ: k.typ })),
+];
+if (anPostiz.length && o.max_anfragen_pro_stunde - bisher < MINDESTENS_FREI) {
+  console.log(`Postiz-Limit: ${bisher}/${o.max_anfragen_pro_stunde} Anfragen in der letzten Stunde – Einplanen später.`);
+  anPostiz = [];
+}
+if (!vorschlagen.length && !anPostiz.length) process.exit(0);
+
+const zuRendern = [...new Set([...vorschlagen, ...anPostiz.map((p) => p.id)])];
 const grafiken = await grafikenRendern(zuRendern.map(fertig), personen);
 
 // ── 3. Vorschauen nach Telegram ──────────────────────────────────────
@@ -113,26 +127,35 @@ if (vorschlagen.length) {
       nachrichten: [...(vorher?.nachrichten ?? []), ...bilder.map((b) => b.message_id), text.message_id],
       aenderungen: vorher?.aenderungen ?? {},
     };
-    await speichern("data/freigabe.json", freigabe);
+    await speichern("daten/freigabe.json", freigabe);
     console.log(`Vorschau gesendet: ${id} ${a.titel}`);
   }
 }
 
 // ── 4. An Postiz ─────────────────────────────────────────────────────
-const anPostiz = [
-  ...freigegeben.map((id) => ({ id, typ: "schedule" })),
-  ...direkt.map((k) => ({ id: String(k.id), typ: k.typ })),
-];
 if (anPostiz.length) {
   if (!POSTIZ_URL || !POSTIZ_API_KEY) throw new Error("POSTIZ_URL und POSTIZ_API_KEY fehlen.");
   const verbindung = await postizVerbinden({ url: POSTIZ_URL, apiKey: POSTIZ_API_KEY });
   const telegram = mitTelegram ? telegramClient({ token: TELEGRAM_BOT_TOKEN }) : null;
+  try {
+    await anPostizSchicken(verbindung, telegram);
+  } finally {
+    // Anfragen merken, damit auch der nächste Lauf das Stundenlimit kennt.
+    const jetzt = new Date().toISOString();
+    postizVerlauf.anfragen = [
+      ...postizVerlauf.anfragen.filter((t) => Date.now() - Date.parse(t) < 60 * 60 * 1000),
+      ...Array(verbindung.postiz.anfragen).fill(jetzt),
+    ];
+    await speichern("daten/postiz.json", postizVerlauf);
+  }
+}
 
+async function anPostizSchicken(verbindung, telegram) {
   for (const { id, typ } of anPostiz) {
     const a = fertig(id);
     const pngs = grafiken[id];
-    if (!passtInsLimit(verbindung, pngs, typ, o)) {
-      console.log(`Anfragen-Limit erreicht (${verbindung.postiz.anfragen}/${o.max_anfragen_pro_lauf}) – Rest beim nächsten Lauf.`);
+    if (!passtInsLimit(verbindung, pngs, typ, o, bisher)) {
+      console.log(`Postiz-Limit erreicht (${bisher + verbindung.postiz.anfragen}/${o.max_anfragen_pro_stunde}) – Rest später.`);
       break;
     }
     // Entwürfe einen Tag später (Postiz braucht ein Datum), Posts im Abstand von abstand_minuten.
@@ -142,12 +165,12 @@ if (anPostiz.length) {
 
     gepostet[id] = await veroeffentlichen(verbindung, a, pngs, { datum, typ, o });
     // Nach jedem Post speichern, damit ein Abbruch nichts doppelt postet.
-    await speichern("data/gepostet.json", gepostet);
+    await speichern("daten/gepostet.json", gepostet);
     console.log(`${typ === "schedule" ? "Geplant" : "Entwurf"}: ${id} ${a.titel} (${datum})`);
 
     if (freigabe.abstimmungen[id]) {
       freigabe.abstimmungen[id].status = "gepostet";
-      await speichern("data/freigabe.json", freigabe);
+      await speichern("daten/freigabe.json", freigabe);
       const zeit = new Date(datum).toLocaleString("de-DE", { timeZone: "Europe/Berlin", dateStyle: "short", timeStyle: "short" });
       const kanaele = verbindung.kanaele.map((k) => k.name).join(", ");
       await telegram.nachricht(TELEGRAM_CHAT_ID, `📅 Eingeplant für ${zeit} auf ${kanaele}.`, {

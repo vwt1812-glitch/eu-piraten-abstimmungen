@@ -1,0 +1,15 @@
+[Unit]
+Description=EU-Abstimmungen der PIRATEN (Telegram-Freigabe und Posten über Postiz)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=@BENUTZER@
+WorkingDirectory=@VERZEICHNIS@
+EnvironmentFile=/etc/eu-piraten.env
+ExecStart=@NODE@ scripts/bot.mjs
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

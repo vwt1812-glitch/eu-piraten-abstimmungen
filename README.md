@@ -1,57 +1,97 @@
 # EU-Piraten-Abstimmungen
 
-Wie stimmen die deutschen Abgeordneten im Europaparlament ab – und wie hätten die Piraten gestimmt?
+Wie stimmen die deutschen Abgeordneten im Europaparlament ab – und wie hätten die PIRATEN gestimmt?
 
-Seit 2024 sitzt keine deutsche Piratin und kein deutscher Pirat im Europaparlament. Die Piraten-Position wird daher
-vom Votum der tschechischen Piratin **Markéta Gregorová** (Piráti) abgeleitet. Bei Themen, bei denen die deutschen
-Piraten anders stehen (z. B. Kernenergie), greifen Regeln aus `abweichungen.json`.
+Seit 2024 sitzt keine deutsche Piratin und kein deutscher Pirat im Europaparlament. Die Position der PIRATEN wird
+daher vom Votum der tschechischen Piratin **Markéta Gregorová** (Piráti) abgeleitet. Bei Themen, bei denen die
+deutschen PIRATEN anders stehen (z. B. Kernenergie), greifen Regeln aus `abweichungen.json`, und vor jedem Post
+entscheidet ein Mensch über Telegram.
 
-Daten: [HowTheyVote.eu](https://howtheyvote.eu) (namentliche Abstimmungen, wöchentlicher Export).
+Daten: [HowTheyVote.eu](https://howtheyvote.eu) (namentliche Abstimmungen, wöchentlicher Export), deutsche Titel
+von [check-some-votes.eu](https://check-some-votes.eu), Fotos © Europäische Union.
 
-## Aufbau
+## Ablauf
 
-| Datei | Inhalt |
-|---|---|
-| `config.json` | Referenz-Abgeordnete, Land, Zeitraum, Datenquelle |
-| `abweichungen.json` | Themen, bei denen die deutschen Piraten von Gregorová abweichen |
-| `lib/` | CSV-Leser, Auswertung, Regeln, Posttexte |
-| `scripts/abrufen.mjs` | lädt die Tabellen von HowTheyVote.eu nach `cache/` (nicht im Repo) |
-| `scripts/auswerten.mjs` | schreibt `data/abstimmungen.json` |
-| `scripts/vorschau.mjs` | zeigt die Posttexte der neuesten Abstimmungen |
-| `scripts/portraets.mjs` | lädt die Porträts der Abgeordneten vom Europaparlament nach `cache/portraets/` |
-| `scripts/grafiken.mjs` | rendert die Sharepics nach `out/<id>/` |
-| `lib/grafik.mjs`, `assets/grafik.css` | Aufbau und Gestaltung der Sharepics |
-| `assets/logos/` | Parteilogos (siehe unten) |
-| `data/abstimmungen.json` | Ergebnis – automatisch, **nicht von Hand bearbeiten** |
-| `data/abgeordnete.json` | Namen der Abgeordneten – automatisch |
-| `data/titel_auto.json` | deutsche Titel von check-some-votes.eu – automatisch |
-| `data/titel.json` | deutsche Titel von Hand, haben Vorrang: `{"198216": "Kürzerer Titel"}` |
-| `scripts/titel.mjs`, `lib/titel.mjs` | holt die deutschen Titel und ordnet sie zu |
-| `data/gepostet.json` | was bereits an Postiz ging – automatisch |
-| `lib/auswahl.mjs`, `lib/beitrag.mjs`, `lib/postiz.mjs` | was wann gepostet wird, Texte je Plattform, Postiz-API |
-| `scripts/posten.mjs` | schlägt neue Abstimmungen vor (Telegram) bzw. plant sie in Postiz ein |
-| `scripts/telegram.mjs`, `lib/freigabe.mjs`, `lib/telegram.mjs` | Freigabe über Telegram |
-| `data/freigabe.json` | Stand der Freigaben – automatisch |
+Ein Dienst auf einem Raspberry Pi (`scripts/bot.mjs`) erledigt alles:
+
+1. **Täglich** (`config.json` → `zeitplan`, Standard 9:30 Uhr): neuen Export von HowTheyVote laden (nur wenn es
+   einen gibt), auswerten, deutsche Titel holen, Porträts laden und neue Abstimmungen **als Vorschau nach
+   Telegram** schicken.
+2. **In Telegram** zu jeder Vorschau: ✅ Ja, ❌ Nein oder ✏️ Ändern.
+3. Nach ✅ plant der Dienst den Post sofort in **Postiz** ein, Postiz veröffentlicht auf allen Kanälen.
+
+## Einrichtung auf dem Raspberry Pi
+
+Raspberry Pi OS Lite 64-bit; empfohlen ist ein Pi 4 oder 5 mit mindestens 2 GB RAM (für Chromium beim Rendern).
 
 ```sh
-npm run abrufen     # ~105 MB Download
-npm run auswerten
-npm run vorschau -- 5
-npm run titel
-npm run portraets
-npm run grafiken -- 198216   # ohne ID: die 3 neuesten
-npm test
+git clone https://github.com/vwt1812-glitch/eu-piraten-abstimmungen.git
+cd eu-piraten-abstimmungen
+bash pi/install.sh
 ```
 
-Ausgewertet werden nur **Hauptabstimmungen** (Schlussabstimmung bzw. Gesamttext), keine einzelnen Änderungsanträge.
+Das Skript installiert Node.js 22, Chromium und Schriften, die Abhängigkeiten und den Dienst `eu-piraten`
+(systemd). Danach:
 
-## Status je Abstimmung
+1. **Telegram-Bot anlegen:** in Telegram [@BotFather](https://t.me/BotFather) → `/newbot`, den Token merken.
+2. **Zugangsdaten eintragen:** `sudo nano /etc/eu-piraten.env`
+   - `POSTIZ_URL` – Adresse der Postiz-Instanz, z. B. `https://postiz.example.org` (die API liegt unter `/api/public/v1`)
+   - `POSTIZ_API_KEY` – aus Postiz → Einstellungen → Public API
+   - `TELEGRAM_BOT_TOKEN` – von BotFather
+   - `TELEGRAM_CHAT_ID` – erst einmal leer lassen
+3. `sudo systemctl start eu-piraten` und dem Bot in Telegram schreiben. Er antwortet mit der **Chat-ID**. Die in
+   `/etc/eu-piraten.env` eintragen und `sudo systemctl restart eu-piraten`. Nur dieser Chat darf freigeben – das
+   kann auch eine Gruppe sein, dann kann das ganze Team freigeben.
 
-| Status | Bedeutung |
+| Befehl | |
 |---|---|
-| `automatisch` | Piraten-Position = Gregorovás Votum (oder feste Position aus einer Regel) – darf automatisch gepostet werden |
-| `pruefen` | ein Stichwort aus `abweichungen.json` passt – vor dem Posten entscheidet ein Mensch |
-| `keine_position` | Gregorová hat nicht abgestimmt – kein Post |
+| `journalctl -u eu-piraten -f` | Protokoll ansehen |
+| `sudo systemctl restart eu-piraten` | Dienst neu starten (z. B. nach Änderung der Zugangsdaten) |
+| `bash pi/aktualisieren.sh` | neuen Code von GitHub holen und neu starten |
+
+Fehler im täglichen Lauf oder beim Einplanen meldet der Bot in Telegram.
+
+Erzeugte Daten liegen auf dem Pi in `daten/`, Downloads in `cache/`, Grafiken in `out/` – alle drei sind nicht
+im Repository.
+
+## Freigabe in Telegram
+
+Jede vorgeschlagene Abstimmung kommt mit allen Grafiken (Feed-Karussell + Übersicht im Hochformat), dem Posttext,
+der Kurzfassung, dem englischen Originaltitel und drei Knöpfen:
+
+- **✅ Ja, posten** – wird in Postiz eingeplant (nächster freier Termin, Abstand `abstand_minuten`); der Bot
+  meldet Zeitpunkt und Kanäle.
+- **❌ Nein** – wird nie gepostet.
+- **✏️ Ändern** – der Bot fragt nach. Auf die Frage (oder die Vorschau) antworten mit
+  - einem neuen Titel, einfach als Text,
+  - `position: dafür` / `dagegen` / `enthaltung` – z. B. bei Kernenergie,
+  - `hinweis: …` – Begründung, erscheint im Post als „Abweichend von Markéta Gregorová: …“.
+
+  Danach kommt eine neue Vorschau mit den Änderungen, wieder mit ✅/❌/✏️.
+
+Prüffälle aus `abweichungen.json` (z. B. Kernenergie) bekommen einen ⚠️-Hinweis.
+
+Befehle: `/status` (was offen ist), `/jetzt` (täglichen Lauf sofort starten), `/hilfe`.
+
+## Was gepostet wird
+
+1. Hauptabstimmungen (Schlussabstimmung bzw. Gesamttext, keine Änderungsanträge) mit Position der PIRATEN,
+   höchstens 21 Tage alt, noch nicht vorgeschlagen.
+2. **Nur mit deutschem Titel.** Abstimmungen ohne stehen im Protokoll, fertig zum Kopieren für `titel.json`.
+3. Neueste zuerst, höchstens 3 Vorschläge pro Tag und 12 pro Woche (`config.json` → `posten`).
+4. Pro Post: Text in passender Länge je Plattform (X 280, Bluesky 300, Mastodon/Threads 500, sonst lang), alle
+   Grafiken als Karussell mit Alternativtexten – TikTok im Hochformat, sonst 4:5. Zusätzlich eine **Story** mit
+   der Übersicht auf Instagram und Facebook (`stories`).
+
+Kanäle: alle in Postiz verbundenen vom Typ X, Bluesky, Mastodon, Threads, Telegram, Facebook, Instagram, TikTok.
+
+Postiz erlaubt standardmäßig 30 API-Anfragen pro Stunde (`API_LIMIT` in der Postiz-Konfiguration); eine
+Abstimmung braucht etwa 8. Der Dienst zählt mit (`max_anfragen_pro_stunde`, 28) und plant den Rest später ein.
+
+`tiktok_methode`: `DIRECT_POST` (sofort veröffentlichen, braucht eine von TikTok freigegebene App) oder `UPLOAD`
+(landet als Entwurf in der TikTok-App).
+
+Ohne `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID` plant `npm run posten` direkt in Postiz ein (Prüffälle als Entwurf).
 
 ## Abweichungen
 
@@ -66,9 +106,7 @@ Ausgewertet werden nur **Hauptabstimmungen** (Schlussabstimmung bzw. Gesamttext)
 ```
 
 Gesucht wird (ohne Groß-/Kleinschreibung) in Titel, Verfahrenstitel, Sachgebieten und EuroVoc-Begriffen – die sind
-englisch, Stichworte also englisch angeben.
-
-Nach der Prüfung eine Abstimmung fest entscheiden:
+englisch, Stichworte also englisch angeben. Eine Abstimmung fest entscheiden:
 
 ```json
 {
@@ -81,115 +119,68 @@ Nach der Prüfung eine Abstimmung fest entscheiden:
 }
 ```
 
-`position`: `FOR`, `AGAINST` oder `ABSTENTION`. Im Post erscheint die Position dann mit Sternchen und Hinweis
-„Abweichend von Markéta Gregorová“.
+`position`: `FOR`, `AGAINST` oder `ABSTENTION`. Im Post erscheint sie mit Sternchen und „Abweichend von Markéta
+Gregorová“. Meist ist das nicht nötig – in Telegram reicht `position: dagegen`.
+
+| Status | Bedeutung |
+|---|---|
+| `automatisch` | Position = Gregorovás Votum (oder feste Position aus einer Regel) |
+| `pruefen` | ein Stichwort aus `abweichungen.json` passt – Vorschau mit ⚠️ |
+| `keine_position` | Gregorová hat nicht abgestimmt – kein Vorschlag |
 
 ## Grafiken
 
-Pro Abstimmung entsteht ein Karussell, jeweils im Format 1080×1350 (`out/<id>/feed/`, für Instagram, Facebook,
-X, Bluesky, Mastodon) und 1080×1920 (`out/<id>/hoch/`, für TikTok und Stories). Im Hochformat bleiben oben und
-unten Ränder frei, weil TikTok und Instagram dort Bedienelemente einblenden.
+Pro Abstimmung ein Karussell, im Format 1080×1350 (`out/<id>/feed/`) und 1080×1920 (`out/<id>/hoch/`, für TikTok
+und Stories, mit freien Rändern für die Bedienelemente der Apps):
 
-1. **Übersicht** – Piraten-Kasten (Fragezeichen-Avatar, weil kein deutscher Pirat im EP sitzt), darunter alle
-   deutschen Parteien mit Stimmenzahl und Mehrheitsvotum, unten das Gesamtergebnis.
+1. **Übersicht** – Kasten der PIRATEN (Fragezeichen-Avatar, weil kein deutscher Pirat im EP sitzt), alle deutschen
+   Parteien mit Stimmenzahl und Mehrheitsvotum, Gesamtergebnis.
 2. **Abgeordnete** (meist 2 Folien) – alle deutschen Abgeordneten mit Foto und Votum, nach Partei gruppiert.
-   Eine Partei wird nie auf zwei Folien verteilt; die Gesichter werden so groß, wie es passt.
 
 Symbole: ✅ Dafür, ❌ Dagegen, ⊖ Enthaltung, N nicht abgestimmt, ✅|❌ Partei gespalten.
 
-**Parteilogos** als `assets/logos/<name>.svg` (oder `.png`/`.webp`) ablegen, z. B. `cdu.svg`, `gruene.svg`,
+**Parteilogos** als `assets/logos/<name>.svg` (oder `.png`/`.webp`), z. B. `cdu.svg`, `gruene.svg`,
 `freie-waehler.svg`, `die-partei.svg`, `oedp.svg`. Ohne Logo erscheint der Parteiname farbig.
-`piraten.svg` erscheint zusätzlich oben rechts in der Ecke jeder Grafik.
-
-Fotos: © Europäische Union (steht auf jeder Grafik).
+`piraten.svg` steht zusätzlich oben rechts in der Ecke jeder Grafik.
 
 ## Deutsche Titel
 
-HowTheyVote liefert nur englische Titel. `npm run titel` holt die offiziellen deutschen Titel des Europaparlaments
-von [check-some-votes.eu](https://check-some-votes.eu) (`/api/votes?lang=de`) und ordnet sie über Tag,
-Dokumentkürzel (z. B. `A10-0197/2026`) und Stimmenzahlen zu. Liefert check-some-votes nur den englischen Titel,
-wird nichts übernommen. Ergebnis: `data/titel_auto.json`.
+`npm run titel` holt die offiziellen deutschen Titel des Europaparlaments von check-some-votes.eu
+(`/api/votes?lang=de`) und ordnet sie über Tag, Dokumentkürzel (z. B. `A10-0197/2026`) und Stimmenzahlen zu.
+Liefert check-some-votes nur den englischen Titel, wird nichts übernommen.
 
-Ist ein offizieller Titel zu sperrig, in `data/titel.json` einen eigenen eintragen – der hat Vorrang.
+Eigene Titel: in Telegram per ✏️ Ändern, oder dauerhaft in `titel.json` (`{"198216": "Kürzerer Titel"}`) – die
+haben Vorrang.
 
-## Posten über Postiz
+## Dateien
 
-Einmalig einrichten (GitHub → Settings → Secrets and variables → Actions):
+| Datei | Inhalt |
+|---|---|
+| `config.json` | Referenz-Abgeordnete, Datenquellen, Limits, Zeitplan |
+| `abweichungen.json` | Themen, bei denen die deutschen PIRATEN von Gregorová abweichen |
+| `titel.json` | eigene deutsche Titel |
+| `scripts/bot.mjs` | der Dienst: Telegram, täglicher Lauf, Einplanen |
+| `scripts/abrufen.mjs` | lädt die Tabellen von HowTheyVote.eu nach `cache/` (~105 MB, nur bei neuem Export) |
+| `scripts/auswerten.mjs` | schreibt `daten/abstimmungen.json` und `daten/abgeordnete.json` |
+| `scripts/titel.mjs` | schreibt `daten/titel_auto.json` |
+| `scripts/portraets.mjs` | lädt die Porträts nach `cache/portraets/` |
+| `scripts/posten.mjs` | Vorschauen nach Telegram, Freigegebenes nach Postiz |
+| `scripts/grafiken.mjs`, `scripts/vorschau.mjs` | Grafiken bzw. Posttexte zum Ansehen |
+| `lib/` | Auswertung, Regeln, Titel, Grafiken, Posttexte, Postiz, Telegram, Freigabe |
+| `assets/` | Gestaltung der Grafiken, Logos |
+| `pi/` | Installation und Dienst für den Raspberry Pi |
 
-| Art | Name | Wert |
-|---|---|---|
-| Variable | `POSTIZ_URL` | Adresse der Postiz-Instanz, z. B. `https://postiz.example.org` (die API liegt unter `/api/public/v1`) |
-| Secret | `POSTIZ_API_KEY` | API-Key aus Postiz → Einstellungen → Public API |
+Zum Ausprobieren auf dem eigenen Rechner:
 
-Gepostet wird auf alle in Postiz verbundenen Kanäle dieser Typen: X, Bluesky, Mastodon, Threads, Telegram,
-Facebook, Instagram, TikTok. Andere werden übersprungen.
+```sh
+npm ci
+npm run abrufen && npm run auswerten && npm run titel && npm run portraets
+npm run grafiken -- 198216        # ohne ID: die 3 neuesten
+npm run posten -- --neue --trocken
+npm test
+```
 
-Ablauf (Action **Posten**, täglich):
-
-1. Kandidaten: Hauptabstimmungen mit Piraten-Position, höchstens 21 Tage alt, noch nicht in `data/gepostet.json`.
-2. **Nur mit deutschem Titel** (automatisch oder von Hand). Abstimmungen ohne stehen im Protokoll des Laufs,
-   fertig zum Kopieren für `data/titel.json`.
-3. Status `automatisch` → geplanter Post, neueste zuerst, höchstens 3 pro Tag und 12 pro Woche, im Abstand von
-   2 Stunden. Status `pruefen` → **Entwurf** in Postiz; dort prüfen und freigeben.
-4. Pro Post: Text in passender Länge je Plattform (X 280, Bluesky 300, Mastodon/Threads 500, sonst lang),
-   alle Grafiken als Karussell mit Alternativtexten – TikTok im Hochformat, sonst 4:5.
-5. Zusätzlich eine **Story** mit der Übersicht im Hochformat auf Instagram und Facebook (`stories` in
-   `config.json`, nur für geplante Posts, nicht für Entwürfe).
-
-Postiz erlaubt standardmäßig 30 API-Anfragen pro Stunde (`API_LIMIT` in der Postiz-Konfiguration). Eine
-Abstimmung braucht etwa 8 (6 Bilder, Post, Story). Mehr als `max_anfragen_pro_lauf` (28) schickt ein Lauf nicht;
-der Rest folgt am nächsten Tag.
-
-Limits und Abstand in `config.json` → `posten`. `tiktok_methode`: `DIRECT_POST` (sofort veröffentlichen, braucht
-eine von TikTok freigegebene App) oder `UPLOAD` (landet als Entwurf in der TikTok-App).
-
-Vorschau ohne Postiz: `npm run posten -- --trocken` oder die Action mit Häkchen „Nur Vorschau“ starten.
-
-## Freigabe über Telegram
-
-Mit Telegram geht nichts raus, bevor ein Mensch zugestimmt hat. Jede vorgeschlagene Abstimmung kommt als
-Nachricht mit allen Grafiken (Feed-Karussell + Übersicht im Hochformat), dem Posttext, der Kurzfassung und drei
-Knöpfen:
-
-- **✅ Ja, posten** – wird in Postiz eingeplant (nächster freier Termin, Abstand `abstand_minuten`); der Bot
-  meldet Zeitpunkt und Kanäle.
-- **❌ Nein** – wird nie gepostet.
-- **✏️ Ändern** – der Bot fragt nach. Auf die Frage (oder die Vorschau) antworten mit
-  - einem neuen Titel, einfach als Text,
-  - `position: dafür` / `dagegen` / `enthaltung` – z. B. bei Kernenergie,
-  - `hinweis: …` – Begründung, erscheint im Post als „Abweichend von Markéta Gregorová: …“.
-
-  Danach kommt eine neue Vorschau mit den Änderungen, wieder mit ✅/❌/✏️.
-
-Prüffälle aus `abweichungen.json` (z. B. Kernenergie) kommen ebenfalls als Vorschau, mit ⚠️-Hinweis.
-Tages- und Wochenlimit gelten für die Vorschläge.
-
-**Einrichten**
-
-1. In Telegram mit [@BotFather](https://t.me/BotFather) `/newbot` anlegen, den Token als **Secret**
-   `TELEGRAM_BOT_TOKEN` speichern.
-2. Dem neuen Bot eine Nachricht schreiben (oder ihn in eine Gruppe aufnehmen und dort etwas schreiben – dann
-   kann das ganze Team freigeben).
-3. Action **Freigabe abholen** von Hand starten. Im Protokoll steht die Chat-ID; als **Variable**
-   `TELEGRAM_CHAT_ID` speichern. Nur dieser Chat darf freigeben.
-
-Ohne `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID` wird wie bisher direkt in Postiz eingeplant.
-
-Antworten werden alle 30 Minuten (etwa 7–23 Uhr) abgeholt – nach „Ja“ kann es also bis zu einer halben Stunde
-dauern, bis der Bot bestätigt. Sofort geht es mit **Actions → Freigabe abholen → Run workflow**.
-
-Hinweis zu den GitHub-Actions-Minuten: Bei einem privaten Repository sind im kostenlosen Plan 2.000 Minuten im
-Monat enthalten; die Freigabe-Abfrage verbraucht davon etwa 1.000. Bei einem öffentlichen Repository sind
-Actions kostenlos.
-
-## Automatische Aktualisierung
-
-| Action | Wann | Was |
-|---|---|---|
-| **Abstimmungen aktualisieren** | sonntags | lädt den Export, schreibt `data/abstimmungen.json`, Vorschau in der Zusammenfassung des Laufs, Grafiken der 3 neuesten Abstimmungen als Download („Artifacts“) |
-| **Posten** | täglich | schlägt neue Abstimmungen in Telegram vor (bzw. plant sie ohne Telegram direkt in Postiz ein) |
-| **Freigabe abholen** | alle 30 Minuten, etwa 7–23 Uhr | holt ✅/❌/✏️ aus Telegram, plant Freigegebenes ein, schickt geänderte Vorschauen |
-| **Tests** | bei Pull Requests und Pushes auf `main` | prüft CSV-Leser, Auswertung, Regeln, Posttexte |
+Auf GitHub laufen bei jedem Push nur die Tests.
 
 ## Geplant
 

@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { posttextLang, posttextKurz, zeichen } from "../lib/posttext.mjs";
 
 const anzahl = Number(process.argv[2] ?? 5);
-const { abstimmungen } = JSON.parse(await readFile(new URL("../data/abstimmungen.json", import.meta.url)));
+const { abstimmungen } = JSON.parse(await readFile(new URL("../daten/abstimmungen.json", import.meta.url)));
 
 for (const a of abstimmungen.filter((a) => a.piraten.position).slice(0, anzahl)) {
   const lang = posttextLang(a);

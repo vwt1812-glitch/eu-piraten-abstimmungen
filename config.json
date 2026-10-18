@@ -13,8 +13,12 @@
     "max_alter_tage": 21,
     "abstand_minuten": 120,
     "tiktok_methode": "DIRECT_POST",
-    "max_anfragen_pro_lauf": 28,
-    "stories": true
+    "stories": true,
+    "max_anfragen_pro_stunde": 28
   },
-  "checksomevotes": "https://check-some-votes.eu"
+  "checksomevotes": "https://check-some-votes.eu",
+  "zeitplan": {
+    "taeglich": "09:30",
+    "zeitzone": "Europe/Berlin"
+  }
 }

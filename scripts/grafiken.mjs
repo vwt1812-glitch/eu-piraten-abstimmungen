@@ -4,8 +4,8 @@ import { readFile } from "node:fs/promises";
 import { grafikenRendern, mitDeutschemTitel } from "../lib/render.mjs";
 
 const json = async (p) => JSON.parse(await readFile(new URL("../" + p, import.meta.url), "utf8"));
-const { abstimmungen } = await json("data/abstimmungen.json");
-const personen = await json("data/abgeordnete.json");
+const { abstimmungen } = await json("daten/abstimmungen.json");
+const personen = await json("daten/abgeordnete.json");
 
 const ids = process.argv.slice(2).map(Number);
 const auswahl = ids.length
