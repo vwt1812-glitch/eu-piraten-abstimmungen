@@ -18,7 +18,7 @@ const signet = datei("assets/logos/piraten-signet.png");
 const FARBE = { FOR: "#3fae49", AGAINST: "#b3122e", ABSTENTION: "#8f8a85", DID_NOT_VOTE: "#d6d2cd" };
 
 // Element, das nach `d` Sekunden (ab Szenenbeginn) hereingleitet.
-const r = (d, html, klasse = "") => `<div class="r ${klasse}" style="--d:${d}s">${html}</div>`;
+const r = (d, html, klasse = "") => `<div class="r ${klasse}" style="--d:${d}">${html}</div>`;
 const balken = (teile) => `<div class="balken">${teile.map(([w, s]) => `<i style="flex:${w};background:${FARBE[s]}"></i>`).join("")}</div>`;
 
 const SZENEN = [
