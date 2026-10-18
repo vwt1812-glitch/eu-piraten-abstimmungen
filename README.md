@@ -88,7 +88,8 @@ Pro Abstimmung entsteht ein Karussell im Format 1080×1350:
 Symbole: ✅ Dafür, ❌ Dagegen, ⊖ Enthaltung, N nicht abgestimmt, ✅|❌ Partei gespalten.
 
 **Parteilogos** als `assets/logos/<name>.svg` (oder `.png`/`.webp`) ablegen, z. B. `cdu.svg`, `gruene.svg`,
-`freie-waehler.svg`, `die-partei.svg`, `oedp.svg`, `piraten.svg`. Ohne Logo erscheint der Parteiname farbig.
+`freie-waehler.svg`, `die-partei.svg`, `oedp.svg`. Ohne Logo erscheint der Parteiname farbig.
+`piraten.svg` erscheint zusätzlich oben rechts in der Ecke jeder Grafik.
 
 Fotos: © Europäische Union (steht auf jeder Grafik).
 
