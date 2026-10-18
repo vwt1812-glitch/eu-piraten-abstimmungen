@@ -86,8 +86,12 @@ der Kurzfassung, dem englischen Originaltitel und drei Knöpfen:
 
 Prüffälle aus `abweichungen.json` (z. B. Kernenergie) bekommen einen ⚠️-Hinweis.
 
-Befehle: `/status` (was offen ist), `/jetzt` (täglichen Lauf sofort starten), `/kanaele` (auf welchen
-Postiz-Kanälen gepostet wird), `/hilfe`.
+Befehle: `/status` (was offen ist), `/jetzt` (täglichen Lauf sofort starten), `/neu` (alle wartenden Vorschauen
+mit aktuellen Grafiken noch einmal schicken, z. B. nach einem Update), `/kanaele` (auf welchen Postiz-Kanälen
+gepostet wird), `/hilfe`.
+
+Schon vorgeschlagene Abstimmungen kommen mit `/jetzt` nicht erneut, und das Tageslimit zählt jeden Vorschlag.
+Beim Einplanen nach ✅ werden die Grafiken immer frisch erzeugt.
 
 ## Was gepostet wird
 

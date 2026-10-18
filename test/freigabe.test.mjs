@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { befehlAuswerten, mitAenderungen, updatesVerarbeiten, aktionenAusfuehren, arbeitOffen, chatsAusUpdates, vorschauText, knoepfe } from "../lib/freigabe.mjs";
+import { befehlAuswerten, mitAenderungen, updatesVerarbeiten, aktionenAusfuehren, arbeitOffen, chatsAusUpdates, vorschauText, knoepfe, alleNeuVorlegen } from "../lib/freigabe.mjs";
 import { naechsterTermin } from "../lib/veroeffentlichen.mjs";
 import { telegramClient } from "../lib/telegram.mjs";
 
@@ -152,4 +152,15 @@ test("Erklärung ändern per Antwort: Bestätigung zeigt die Stichpunkte", () =>
   assert.match(aktionen[0].text, /erklaerung: \n• Es geht um Blei\./);
   updatesVerarbeiten(z, [antwort(2, "erklaerung: aus", 11)], CHAT);
   assert.deepEqual(z.abstimmungen["100"].aenderungen, { erklaerung: false });
+});
+
+test("/neu: wartende Vorschauen werden neu vorgelegt, Erledigtes bleibt", () => {
+  const z = zustand();
+  z.abstimmungen["300"] = { status: "gepostet", nachrichten: [], aenderungen: {} };
+  z.abstimmungen["200"].aenderungen = { titel: "Eigener Titel" };
+  assert.equal(alleNeuVorlegen(z), 2);
+  assert.deepEqual(Object.values(z.abstimmungen).map((e) => e.status), ["geaendert", "geaendert", "gepostet"]);
+  assert.deepEqual(z.abstimmungen["200"].aenderungen, { titel: "Eigener Titel" }); // Änderungen bleiben erhalten
+  assert.ok(arbeitOffen(z));
+  assert.equal(alleNeuVorlegen(z), 0);
 });

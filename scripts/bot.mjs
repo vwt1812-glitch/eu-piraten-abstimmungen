@@ -7,7 +7,7 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { telegramClient } from "../lib/telegram.mjs";
-import { updatesVerarbeiten, aktionenAusfuehren, arbeitOffen, chatsAusUpdates } from "../lib/freigabe.mjs";
+import { updatesVerarbeiten, aktionenAusfuehren, arbeitOffen, chatsAusUpdates, alleNeuVorlegen } from "../lib/freigabe.mjs";
 import { faellig, heute } from "../lib/zeitplan.mjs";
 import { warnungenTexte } from "../lib/warnungen.mjs";
 import { postizClient } from "../lib/postiz.mjs";
@@ -33,6 +33,7 @@ const HILFE = [
   "/status – was gerade offen ist",
   "/jetzt – den täglichen Lauf sofort starten",
   "/kanaele – auf welchen Postiz-Kanälen gepostet wird",
+  "/neu – alle wartenden Vorschauen mit aktuellen Grafiken noch einmal schicken",
 ].join("\n");
 
 // Startet scripts/<name>.mjs; bei Fehler kommen die letzten Zeilen per Telegram.
@@ -167,6 +168,16 @@ for (;;) {
         await antwort("🔄 Starte den täglichen Lauf …");
         await taeglicherLauf();
         await antwort("✔️ Fertig.");
+      } else if (b.befehl === "/neu") {
+        const z = await json("daten/freigabe.json", leer);
+        const anzahl = alleNeuVorlegen(z);
+        if (!anzahl) await antwort("Es wartet gerade keine Vorschau auf Freigabe.");
+        else {
+          await speichern("daten/freigabe.json", z);
+          await antwort(`🔄 Schicke ${anzahl} Vorschau${anzahl === 1 ? "" : "en"} neu – lade vorher die Fotos nach …`);
+          await schritt("portraets").catch((e) => melden(`⚠️ Porträts: ${e.message}`));
+          naechsterPostVersuch = 0;
+        }
       } else if (b.befehl === "/kanaele") {
         try {
           const alle = await postizClient({ url: process.env.POSTIZ_URL, apiKey: process.env.POSTIZ_API_KEY }).kanaele();
