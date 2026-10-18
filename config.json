@@ -21,6 +21,10 @@
     "max_anfragen_pro_stunde": 28,
     "stories": true
   },
+  "mastodon": {
+    "sichtbarkeit": "unlisted",
+    "inhaltswarnung": "EU-Politik: {titel}"
+  },
   "checksomevotes": "https://check-some-votes.eu",
   "zeitplan": {
     "taeglich": "09:30",

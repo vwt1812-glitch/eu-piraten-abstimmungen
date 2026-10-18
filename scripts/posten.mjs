@@ -13,10 +13,11 @@ import { fileURLToPath } from "node:url";
 import { auswahl } from "../lib/auswahl.mjs";
 import { beitrag } from "../lib/beitrag.mjs";
 import { grafikenRendern, mitDeutschemTitel, deutscheTitel } from "../lib/render.mjs";
-import { postizVerbinden, passtInsLimit, veroeffentlichen, naechsterTermin, anfragenLetzteStunde, MINDESTENS_FREI } from "../lib/veroeffentlichen.mjs";
+import { postizVerbinden, kanalNamen, passtInsLimit, veroeffentlichen, naechsterTermin, anfragenLetzteStunde, MINDESTENS_FREI } from "../lib/veroeffentlichen.mjs";
 import { telegramClient } from "../lib/telegram.mjs";
 import { auswahlAusUmgebung } from "../lib/kanalauswahl.mjs";
 import { mitAenderungen, vorschauText, knoepfe } from "../lib/freigabe.mjs";
+import { mastodonAusUmgebung, mastodonClient } from "../lib/mastodon.mjs";
 
 const pfad = (p) => fileURLToPath(new URL("../" + p, import.meta.url));
 const json = async (p, standard) => JSON.parse(await readFile(pfad(p), "utf8").catch(() => JSON.stringify(standard)));
@@ -136,7 +137,9 @@ if (vorschlagen.length) {
 // ── 4. An Postiz ─────────────────────────────────────────────────────
 if (anPostiz.length) {
   if (!POSTIZ_URL || !POSTIZ_API_KEY) throw new Error("POSTIZ_URL und POSTIZ_API_KEY fehlen.");
-  const verbindung = await postizVerbinden({ url: POSTIZ_URL, apiKey: POSTIZ_API_KEY, auswahl: auswahlAusUmgebung(process.env) });
+  const verbindung = await postizVerbinden({
+    url: POSTIZ_URL, apiKey: POSTIZ_API_KEY, auswahl: auswahlAusUmgebung(process.env), mastodon: await mastodonVerbinden(),
+  });
   const telegram = mitTelegram ? telegramClient({ token: TELEGRAM_BOT_TOKEN }) : null;
   try {
     await anPostizSchicken(verbindung, telegram);
@@ -149,6 +152,15 @@ if (anPostiz.length) {
     ];
     await speichern("daten/postiz.json", postizVerlauf);
   }
+}
+
+// Mastodon direkt (ungelistet, mit Inhaltswarnung), wenn MASTODON_URL und MASTODON_TOKEN gesetzt sind.
+async function mastodonVerbinden() {
+  const zugang = mastodonAusUmgebung(process.env);
+  if (!zugang) return null;
+  const client = mastodonClient(zugang);
+  const konto = await client.konto();
+  return { client, konto: konto.acct, einstellungen: config.mastodon ?? {} };
 }
 
 async function anPostizSchicken(verbindung, telegram) {
@@ -176,8 +188,9 @@ async function anPostizSchicken(verbindung, telegram) {
       freigabe.abstimmungen[id].status = "gepostet";
       await speichern("daten/freigabe.json", freigabe);
       const zeit = new Date(datum).toLocaleString("de-DE", { timeZone: "Europe/Berlin", dateStyle: "short", timeStyle: "short" });
-      const kanaele = verbindung.kanaele.map((k) => k.name).join(", ");
-      await telegram.nachricht(TELEGRAM_CHAT_ID, `📅 Eingeplant für ${zeit} auf ${kanaele}.`, {
+      const kanaele = kanalNamen(verbindung).join(", ");
+      const mastodonFehler = gepostet[id].mastodonFehler ? `\n⚠️ Mastodon fehlgeschlagen: ${gepostet[id].mastodonFehler.slice(0, 300)}` : "";
+      await telegram.nachricht(TELEGRAM_CHAT_ID, `📅 Eingeplant für ${zeit} auf ${kanaele}.${mastodonFehler}`, {
         reply_parameters: { message_id: freigabe.abstimmungen[id].nachrichten.at(-1), allow_sending_without_reply: true },
       });
     }

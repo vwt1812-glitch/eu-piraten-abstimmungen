@@ -9,6 +9,11 @@ POSTIZ_API_KEY=
 POSTIZ_KANAELE=
 POSTIZ_KUNDE=
 
+# Mastodon direkt statt über Postiz (ungelistet, mit Inhaltswarnung) – optional.
+# Token: auf der Instanz Einstellungen → Entwicklung → Neue Anwendung (read:accounts, write:media, write:statuses).
+MASTODON_URL=
+MASTODON_TOKEN=
+
 # Telegram-Bot von @BotFather (/newbot)
 TELEGRAM_BOT_TOKEN=
 # Leer lassen, Dienst starten, dem Bot schreiben – er antwortet mit der Chat-ID. Dann hier eintragen.

@@ -12,6 +12,7 @@ import { faellig, heute } from "../lib/zeitplan.mjs";
 import { warnungenTexte } from "../lib/warnungen.mjs";
 import { postizClient } from "../lib/postiz.mjs";
 import { auswahlAusUmgebung, kanalUebersicht } from "../lib/kanalauswahl.mjs";
+import { mastodonAusUmgebung, mastodonClient } from "../lib/mastodon.mjs";
 
 const pfad = (p) => fileURLToPath(new URL("../" + p, import.meta.url));
 const json = async (p, standard) => JSON.parse(await readFile(pfad(p), "utf8").catch(() => JSON.stringify(standard)));
@@ -32,7 +33,7 @@ const HILFE = [
   "",
   "/status – was gerade offen ist",
   "/jetzt – den täglichen Lauf sofort starten",
-  "/kanaele – auf welchen Postiz-Kanälen gepostet wird",
+  "/kanaele – auf welchen Kanälen gepostet wird",
   "/neu – alle wartenden Vorschauen mit aktuellen Grafiken noch einmal schicken",
 ].join("\n");
 
@@ -181,7 +182,13 @@ for (;;) {
       } else if (b.befehl === "/kanaele") {
         try {
           const alle = await postizClient({ url: process.env.POSTIZ_URL, apiKey: process.env.POSTIZ_API_KEY }).kanaele();
-          await antwort(kanalUebersicht(alle, auswahlAusUmgebung(process.env)).slice(0, 4000));
+          const zugang = mastodonAusUmgebung(process.env);
+          const mastodon = zugang
+            ? await mastodonClient(zugang).konto()
+                .then((k) => ({ konto: k.acct, einstellungen: config.mastodon }))
+                .catch((e) => ({ fehler: e.message }))
+            : null;
+          await antwort(kanalUebersicht(alle, auswahlAusUmgebung(process.env), mastodon).slice(0, 4000));
         } catch (e) {
           await antwort(`⚠️ Postiz nicht erreichbar: ${e.message}`);
         }

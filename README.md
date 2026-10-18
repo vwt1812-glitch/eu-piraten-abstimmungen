@@ -42,6 +42,7 @@ Das Skript installiert Node.js 22, Chromium und Schriften, die Abhängigkeiten u
    - `POSTIZ_KANAELE` – **nur auf diesen Kanälen wird gepostet**: Name, Profil oder ID, kommagetrennt
      (z. B. `PIRATEN EU, @piraten_eu_bsky`), und/oder `POSTIZ_KUNDE` – alle Kanäle eines Postiz-„Kunden“.
      Ohne Auswahl wird nichts gepostet. Welche Kanäle es gibt, zeigt der Bot mit `/kanaele`.
+   - `MASTODON_URL` und `MASTODON_TOKEN` – optional, Mastodon **direkt statt über Postiz** (siehe unten).
 3. `sudo systemctl start eu-piraten` und dem Bot in Telegram schreiben. Er antwortet mit der **Chat-ID**. Die in
    `/etc/eu-piraten.env` eintragen und `sudo systemctl restart eu-piraten`. Nur dieser Chat darf freigeben – das
    kann auch eine Gruppe sein, dann kann das ganze Team freigeben.
@@ -110,6 +111,23 @@ Beim Einplanen nach ✅ werden die Grafiken immer frisch erzeugt.
 Kanäle: nur die in `POSTIZ_KANAELE` / `POSTIZ_KUNDE` ausgewählten – andere Accounts in Postiz bleiben unberührt.
 Unterstützt sind X, Bluesky, Mastodon, Threads, Telegram, Facebook, Instagram und TikTok; ausgewählte Kanäle
 anderer Typen oder deaktivierte werden übersprungen und in `/kanaele` gemeldet.
+
+### Mastodon direkt
+
+Postiz postet auf Mastodon immer **öffentlich** und ohne Inhaltswarnung. Viele Instanzen verlangen für
+automatisierte Accounts aber „ungelistet“ (nicht auf der lokalen Timeline) und Inhaltswarnungen bei Politik.
+Deshalb kann der Dienst Mastodon selbst bedienen:
+
+1. Auf der Instanz: Einstellungen → Entwicklung → Neue Anwendung, Berechtigungen `read:accounts`,
+   `write:media`, `write:statuses`. Den **Zugriffstoken** als `MASTODON_TOKEN`, die Adresse der Instanz als
+   `MASTODON_URL` in `/etc/eu-piraten.env` eintragen.
+2. Im Profil „Dies ist ein automatisierter Account“ anhaken.
+
+Dann geht jeder Post **ungelistet** und mit **Inhaltswarnung** („EU-Politik: <Titel>“) raus, mit denselben
+Grafiken und Alternativtexten, von Mastodon selbst zum selben Termin eingeplant. Mastodon-Kanäle in Postiz
+werden dann übersprungen. Einstellbar in `config.json` → `mastodon`: `sichtbarkeit` (`unlisted`, `public`,
+`private`) und `inhaltswarnung` (`{titel}` wird ersetzt, leer = keine). Der Dienst antwortet und folgt
+niemandem – er postet nur.
 
 Postiz erlaubt standardmäßig 30 API-Anfragen pro Stunde (`API_LIMIT` in der Postiz-Konfiguration); eine
 Abstimmung braucht etwa 8. Der Dienst zählt mit (`max_anfragen_pro_stunde`, 28) und plant den Rest später ein.
