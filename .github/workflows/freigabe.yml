@@ -1,0 +1,62 @@
+name: Freigabe abholen
+
+# Holt Antworten aus Telegram (✅/❌/✏️). Nur wenn etwas zu tun ist, werden Grafiken gerendert
+# und Freigegebenes in Postiz eingeplant – sonst dauert ein Lauf wenige Sekunden.
+on:
+  schedule:
+    - cron: "7,37 5-21 * * *" # alle 30 Minuten, etwa 7–23 Uhr
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daten
+  cancel-in-progress: false
+
+jobs:
+  freigabe:
+    runs-on: ubuntu-latest
+    env:
+      POSTIZ_URL: ${{ vars.POSTIZ_URL }}
+      POSTIZ_API_KEY: ${{ secrets.POSTIZ_API_KEY }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Antworten aus Telegram abholen
+        id: telegram
+        run: node scripts/telegram.mjs
+
+      - if: steps.telegram.outputs.arbeit == 'true'
+        run: npm ci
+
+      - if: steps.telegram.outputs.arbeit == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - if: steps.telegram.outputs.arbeit == 'true'
+        name: Porträts laden
+        run: npm run portraets
+
+      - if: steps.telegram.outputs.arbeit == 'true'
+        name: Einplanen und geänderte Vorschauen senden
+        run: npm run posten
+
+      - name: Stand merken
+        if: always()
+        run: |
+          git add data/freigabe.json data/gepostet.json 2>/dev/null || git add data/freigabe.json
+          if git diff --cached --quiet; then
+            echo "Keine Änderungen."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Freigabe aktualisieren"
+          git pull --rebase
+          git push

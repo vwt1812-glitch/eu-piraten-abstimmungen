@@ -1,5 +1,7 @@
 name: Posten
 
+# Wählt neue Abstimmungen aus. Mit Telegram: Vorschau zur Freigabe; ohne: direkt in Postiz.
+
 on:
   schedule:
     - cron: "41 7 * * *" # täglich gegen 9:41 Uhr
@@ -39,23 +41,25 @@ jobs:
       - name: Porträts laden
         run: npm run portraets
 
-      - name: In Postiz einplanen
+      - name: Neue Abstimmungen vorschlagen bzw. einplanen
         shell: bash # mit pipefail, damit ein Fehler trotz tee auffällt
         env:
           POSTIZ_URL: ${{ vars.POSTIZ_URL }}
           POSTIZ_API_KEY: ${{ secrets.POSTIZ_API_KEY }}
-        run: npm run posten -- ${{ inputs.trocken && '--trocken' || '' }} | tee -a "$GITHUB_STEP_SUMMARY"
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID }}
+        run: npm run posten -- --neue ${{ inputs.trocken && '--trocken' || '' }} | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Gepostetes und Titel merken
         if: always()
         run: |
-          git add data/gepostet.json data/titel_auto.json 2>/dev/null || true
+          git add data/gepostet.json data/titel_auto.json data/freigabe.json 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "Keine Änderungen."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
-          git commit -m "Gepostete Abstimmungen merken"
+          git commit -m "Gepostete und vorgeschlagene Abstimmungen merken"
           git pull --rebase
           git push

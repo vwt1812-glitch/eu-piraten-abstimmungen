@@ -29,7 +29,9 @@ Daten: [HowTheyVote.eu](https://howtheyvote.eu) (namentliche Abstimmungen, wöch
 | `scripts/titel.mjs`, `lib/titel.mjs` | holt die deutschen Titel und ordnet sie zu |
 | `data/gepostet.json` | was bereits an Postiz ging – automatisch |
 | `lib/auswahl.mjs`, `lib/beitrag.mjs`, `lib/postiz.mjs` | was wann gepostet wird, Texte je Plattform, Postiz-API |
-| `scripts/posten.mjs` | plant neue Abstimmungen in Postiz ein |
+| `scripts/posten.mjs` | schlägt neue Abstimmungen vor (Telegram) bzw. plant sie in Postiz ein |
+| `scripts/telegram.mjs`, `lib/freigabe.mjs`, `lib/telegram.mjs` | Freigabe über Telegram |
+| `data/freigabe.json` | Stand der Freigaben – automatisch |
 
 ```sh
 npm run abrufen     # ~105 MB Download
@@ -143,12 +145,50 @@ eine von TikTok freigegebene App) oder `UPLOAD` (landet als Entwurf in der TikTo
 
 Vorschau ohne Postiz: `npm run posten -- --trocken` oder die Action mit Häkchen „Nur Vorschau“ starten.
 
+## Freigabe über Telegram
+
+Mit Telegram geht nichts raus, bevor ein Mensch zugestimmt hat. Jede vorgeschlagene Abstimmung kommt als
+Nachricht mit allen Grafiken (Feed-Karussell + Übersicht im Hochformat), dem Posttext, der Kurzfassung und drei
+Knöpfen:
+
+- **✅ Ja, posten** – wird in Postiz eingeplant (nächster freier Termin, Abstand `abstand_minuten`); der Bot
+  meldet Zeitpunkt und Kanäle.
+- **❌ Nein** – wird nie gepostet.
+- **✏️ Ändern** – der Bot fragt nach. Auf die Frage (oder die Vorschau) antworten mit
+  - einem neuen Titel, einfach als Text,
+  - `position: dafür` / `dagegen` / `enthaltung` – z. B. bei Kernenergie,
+  - `hinweis: …` – Begründung, erscheint im Post als „Abweichend von Markéta Gregorová: …“.
+
+  Danach kommt eine neue Vorschau mit den Änderungen, wieder mit ✅/❌/✏️.
+
+Prüffälle aus `abweichungen.json` (z. B. Kernenergie) kommen ebenfalls als Vorschau, mit ⚠️-Hinweis.
+Tages- und Wochenlimit gelten für die Vorschläge.
+
+**Einrichten**
+
+1. In Telegram mit [@BotFather](https://t.me/BotFather) `/newbot` anlegen, den Token als **Secret**
+   `TELEGRAM_BOT_TOKEN` speichern.
+2. Dem neuen Bot eine Nachricht schreiben (oder ihn in eine Gruppe aufnehmen und dort etwas schreiben – dann
+   kann das ganze Team freigeben).
+3. Action **Freigabe abholen** von Hand starten. Im Protokoll steht die Chat-ID; als **Variable**
+   `TELEGRAM_CHAT_ID` speichern. Nur dieser Chat darf freigeben.
+
+Ohne `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID` wird wie bisher direkt in Postiz eingeplant.
+
+Antworten werden alle 30 Minuten (etwa 7–23 Uhr) abgeholt – nach „Ja“ kann es also bis zu einer halben Stunde
+dauern, bis der Bot bestätigt. Sofort geht es mit **Actions → Freigabe abholen → Run workflow**.
+
+Hinweis zu den GitHub-Actions-Minuten: Bei einem privaten Repository sind im kostenlosen Plan 2.000 Minuten im
+Monat enthalten; die Freigabe-Abfrage verbraucht davon etwa 1.000. Bei einem öffentlichen Repository sind
+Actions kostenlos.
+
 ## Automatische Aktualisierung
 
 | Action | Wann | Was |
 |---|---|---|
 | **Abstimmungen aktualisieren** | sonntags | lädt den Export, schreibt `data/abstimmungen.json`, Vorschau in der Zusammenfassung des Laufs, Grafiken der 3 neuesten Abstimmungen als Download („Artifacts“) |
-| **Posten** | täglich | plant neue Abstimmungen in Postiz ein, merkt sie in `data/gepostet.json` |
+| **Posten** | täglich | schlägt neue Abstimmungen in Telegram vor (bzw. plant sie ohne Telegram direkt in Postiz ein) |
+| **Freigabe abholen** | alle 30 Minuten, etwa 7–23 Uhr | holt ✅/❌/✏️ aus Telegram, plant Freigegebenes ein, schickt geänderte Vorschauen |
 | **Tests** | bei Pull Requests und Pushes auf `main` | prüft CSV-Leser, Auswertung, Regeln, Posttexte |
 
 ## Geplant
