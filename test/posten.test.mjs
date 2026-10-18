@@ -137,3 +137,35 @@ test("Postiz: zählt Anfragen fürs Stundenlimit", async () => {
   await postiz.kanaele();
   assert.equal(postiz.anfragen, 2);
 });
+
+import twitter from "twitter-text";
+import { MAX_LAENGE } from "../lib/beitrag.mjs";
+
+// Nachbau von Postiz: stripHtmlValidation("normal", …) macht aus <p>-Absätzen Zeilen,
+// countLength zählt X gewichtet, Threads in Bytes, sonst text.length.
+function wiePostiz(identifier, html) {
+  const text = html.replace(/^<p>/, "").replace(/<p>/g, "\n").replace(/<\/p>/g, "")
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+  if (identifier === "x") return twitter.parseTweet(text).weightedLength;
+  if (identifier === "threads") return new TextEncoder().encode(text).length;
+  return text.length;
+}
+
+test("Posttexte passen auf jeder Plattform ins Limit, so wie Postiz zählt", () => {
+  const kanaele = Object.keys(MAX_LAENGE).map((identifier) => ({ id: identifier, identifier }));
+  const parteien = ["CDU", "SPD", "AfD", "Grüne", "CSU", "FDP", "BSW", "Freie Wähler", "Linke", "Volt", "Die PARTEI", "Parteilos", "Familie", "ÖDP", "PdF", "Tierschutz"];
+  for (const titel of ["Kurz", "Überprüfung der Verordnung über Ökodesign-Anforderungen für nachhaltige Produkte ".repeat(5)]) {
+    for (const quelle of ["referenz", "regel"]) {
+      const a = {
+        id: 198216, zeitpunkt: "2026-10-08 12:00:00", titel, ergebnis: "ADOPTED",
+        deutschland: parteien.map((partei, i) => ({ partei, mehrheit: ["FOR", "AGAINST", "ABSTENTION", "GESPALTEN"][i % 4] })),
+        piraten: { position: "AGAINST", quelle, hinweis: "Die deutschen PIRATEN lehnen Atomkraft ab – Überprüfung nötig." },
+      };
+      for (const p of beitrag(a, { kanaele, bilder: { feed: [], hoch: [] }, datum: "2026-10-18T12:00:00Z" }).posts) {
+        const id = p.integration.id;
+        const laenge = wiePostiz(id, p.value[0].content);
+        assert.ok(laenge <= MAX_LAENGE[id], `${id}: ${laenge} > ${MAX_LAENGE[id]} (${quelle}, Titel ${titel.length})`);
+      }
+    }
+  }
+});

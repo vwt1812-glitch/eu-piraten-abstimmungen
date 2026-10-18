@@ -91,7 +91,8 @@ Befehle: `/status` (was offen ist), `/jetzt` (täglichen Lauf sofort starten), `
 4. **Wann:** nur zwischen 9 und 21 Uhr (`zeitfenster`, Berliner Zeit) und mindestens 2 Stunden nach dem letzten
    Post (`abstand_minuten`), auch wenn der schon veröffentlicht ist. Wer abends nach 21 Uhr freigibt, sieht den
    Post am nächsten Morgen um 9 Uhr.
-5. Pro Post: Text in passender Länge je Plattform (X 280, Bluesky 300, Mastodon/Threads 500, sonst lang), alle
+5. Pro Post: Text in passender Länge je Plattform (Kurzfassung für X, Bluesky und Threads, sonst lang – gezählt
+   wie Postiz: meist JavaScript-Zeichen, bei Threads Bytes, bei X gewichtet), alle
    Grafiken als Karussell mit Alternativtexten – TikTok im Hochformat, sonst 4:5. Zusätzlich eine **Story** mit
    der Übersicht auf Instagram und Facebook (`stories`).
 
