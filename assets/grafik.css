@@ -153,7 +153,7 @@ h2 {
 .gruppe {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 16px;
   border-bottom: 1px solid #e4ded7;
   padding: 8px 0 6px;
   min-width: 0;
@@ -164,7 +164,7 @@ h2 {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start; /* Köpfe bleiben auf einer Linie, auch wenn ein Name zwei Zeilen braucht */
-  gap: 4px;
+  gap: 6px 6px; /* Luft zwischen den Gesichtern – auch für das Symbol, das über die Ecke ragt */
   min-width: 0;
 }
 .piraten-band {
@@ -183,7 +183,7 @@ h2 {
 .piraten-band .band-text b { color: var(--orange); font-weight: 700; text-transform: uppercase; }
 .piraten-band .badge { flex: none; }
 .format-hoch .piraten-band .band-text { font-size: 34px; }
-.gruppe-logo { flex: none; width: 104px; height: calc(var(--gesicht) * 1.25); display: flex; align-items: center; } /* feste Spalte: alle Logos und Gesichter stehen auf derselben Linie */
+.gruppe-logo { flex: none; width: 92px; height: calc(var(--gesicht) * 1.25); display: flex; align-items: center; } /* feste Spalte: alle Logos und Gesichter stehen auf derselben Linie */
 .gruppe-logo .logo-text { font-size: 18px; padding: 3px 8px; }
 /* Logos sollen die Gesichter nicht verdrängen: höchstens 120 px breit und 55 % der Gesichtshöhe hoch. */
 .gruppe-logo img.logo { max-width: 100%; max-height: calc(var(--gesicht) * 0.55); width: auto; height: auto; }
@@ -193,7 +193,7 @@ figure { margin: 0; width: var(--gesicht); text-align: center; }
 .kopf .foto { width: 100%; height: 100%; border-radius: 6px; object-fit: cover; object-position: top; display: block; }
 .kopf .foto-bild { position: absolute; inset: 0; }
 .kopf .foto-bild.eng { object-fit: contain; object-position: bottom; background: #eceef1; }
-.kopf .badge { position: absolute; right: -6px; bottom: -6px; }
+.kopf .badge { position: absolute; right: -6px; bottom: -6px; z-index: 2; } /* immer vor dem Nachbarfoto */
 .foto-leer {
   display: flex !important;
   align-items: center;
