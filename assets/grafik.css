@@ -159,27 +159,24 @@ h2 {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start; /* Köpfe bleiben auf einer Linie, auch wenn ein Name zwei Zeilen braucht */
-  gap: 6px 12px; /* Platz für das Stimm-Symbol, das über die Ecke ragt */
+  gap: 4px 4px;
   background: #fff;
   border: 2px solid var(--rand);
   border-radius: 10px;
-  padding: 8px 14px 4px 8px;
+  padding: 8px 8px 4px;
 }
 .gruppe-piraten { border: 3px solid var(--orange); }
-.gruppe-logo { height: var(--gesicht); display: flex; align-items: center; padding: 0 6px; }
+.gruppe-logo { height: calc(var(--gesicht) * 1.25); display: flex; align-items: center; padding: 0 6px; }
 .gruppe-logo .logo-text { font-size: 18px; padding: 3px 8px; }
 /* Logos sollen die Gesichter nicht verdrängen: höchstens 120 px breit und 55 % der Gesichtshöhe hoch. */
 .gruppe-logo img.logo { max-width: 120px; max-height: calc(var(--gesicht) * 0.55); width: auto; height: auto; }
 .gruppe-logo img.signet { max-height: calc(var(--gesicht) * 0.8); }
 figure { margin: 0; width: var(--gesicht); text-align: center; }
-.kopf { position: relative; width: var(--gesicht); height: var(--gesicht); }
-.kopf .foto { width: 100%; height: 100%; border-radius: 6px; object-fit: cover; object-position: 50% 20%; display: block; box-shadow: 0 0 0 3px var(--stimme, transparent); }
-figure.stimme-for { --stimme: #3fae49; }
-figure.stimme-against { --stimme: #b3122e; }
-figure.stimme-abstention { --stimme: #8f8a85; }
-figure.stimme-did_not_vote { --stimme: #d6d2cd; }
+.kopf { position: relative; width: var(--gesicht); height: calc(var(--gesicht) * 1.25); } /* 4:5 wie die EP-Fotos */
+.kopf .foto { width: 100%; height: 100%; border-radius: 6px; object-fit: cover; object-position: top; display: block; }
 .kopf .foto-bild { position: absolute; inset: 0; }
-.kopf .badge { position: absolute; right: -11px; bottom: -9px; width: calc(var(--gesicht) * .34); height: calc(var(--gesicht) * .34); }
+.kopf .foto-bild.eng { object-fit: contain; object-position: bottom; background: #eceef1; }
+.kopf .badge { position: absolute; right: -6px; bottom: -6px; }
 .foto-leer {
   display: flex !important;
   align-items: center;
