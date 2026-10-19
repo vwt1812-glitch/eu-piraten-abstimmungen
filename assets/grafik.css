@@ -142,23 +142,24 @@ h2 {
 .abgeordnete {
   flex: 1;
   min-height: 0;
-  margin: 22px 30px 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-content: stretch; /* Reihen füllen die Höhe – kein freier Streifen unten */
-  gap: 12px 10px;
+  margin: 18px 48px 0;
+  /* Raster wie eine Tabelle: zwei Spalten, große Parteien über die ganze Breite (.breit, setzt render.mjs) */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-auto-flow: row dense;
+  align-content: stretch; /* Zeilen teilen sich die Höhe – kein freier Streifen unten */
+  column-gap: 40px;
 }
 .gruppe {
-  flex-grow: 1; /* Blöcke füllen ihre Zeile */
   display: flex;
   align-items: center;
-  justify-content: center; /* Logo und Gesichter mittig im Block */
-  gap: 4px;
-  background: #f0ebe5;
-  border-radius: 10px;
-  padding: 8px 8px 4px;
+  gap: 10px;
+  border-bottom: 1px solid #e4ded7;
+  padding: 8px 0 6px;
+  min-width: 0;
 }
-/* Logo in eigener Spalte, Gesichter daneben in gleichmäßig gefüllten Reihen (render.mjs gleicht aus). */
+.gruppe.breit { grid-column: 1 / -1; }
+/* Gesichter in gleichmäßig gefüllten Reihen (render.mjs gleicht aus), immer an derselben Kante beginnend. */
 .gesichter {
   display: flex;
   flex-wrap: wrap;
@@ -167,7 +168,8 @@ h2 {
   min-width: 0;
 }
 .piraten-band {
-  flex: 1 1 100%;
+  grid-column: 1 / -1;
+  margin-bottom: 4px;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -181,10 +183,10 @@ h2 {
 .piraten-band .band-text b { color: var(--orange); font-weight: 700; text-transform: uppercase; }
 .piraten-band .badge { flex: none; }
 .format-hoch .piraten-band .band-text { font-size: 34px; }
-.gruppe-logo { flex: none; height: calc(var(--gesicht) * 1.25); display: flex; align-items: center; padding: 0 6px; }
+.gruppe-logo { flex: none; width: 104px; height: calc(var(--gesicht) * 1.25); display: flex; align-items: center; } /* feste Spalte: alle Logos und Gesichter stehen auf derselben Linie */
 .gruppe-logo .logo-text { font-size: 18px; padding: 3px 8px; }
 /* Logos sollen die Gesichter nicht verdrängen: höchstens 120 px breit und 55 % der Gesichtshöhe hoch. */
-.gruppe-logo img.logo { max-width: 100px; max-height: calc(var(--gesicht) * 0.55); width: auto; height: auto; }
+.gruppe-logo img.logo { max-width: 100%; max-height: calc(var(--gesicht) * 0.55); width: auto; height: auto; }
 .gruppe-logo img.signet { max-height: calc(var(--gesicht) * 0.8); }
 figure { margin: 0; width: var(--gesicht); text-align: center; }
 .kopf { position: relative; width: var(--gesicht); height: calc(var(--gesicht) * 1.25); } /* 4:5 wie die EP-Fotos */
@@ -258,7 +260,7 @@ footer .quelle { display: flex; align-items: center; gap: 16px; font-size: 14px;
 .format-hoch .parteien { margin: 0 72px; gap: 4px 40px; }
 .format-hoch .balken { height: 14px; }
 .format-hoch footer .balken { height: 40px; }
-.format-hoch .abgeordnete { margin: 30px 56px 0; }
+.format-hoch .abgeordnete { margin: 26px 72px 0; }
 .format-hoch footer { padding: 24px 72px 300px; }
 .format-hoch .legende { font-size: 20px; gap: 14px 22px; }
 
