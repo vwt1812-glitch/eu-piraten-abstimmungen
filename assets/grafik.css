@@ -28,7 +28,7 @@ header {
   position: relative;
   background: var(--dunkel);
   color: #fff;
-  padding: 34px 170px 40px 48px;
+  padding: 30px 48px 36px;
   border-bottom: 8px solid var(--orange);
   overflow: hidden;
   flex: none;
@@ -41,39 +41,18 @@ h1 {
   line-height: 1.08;
   letter-spacing: .01em;
 }
+.kopfzeile { display: flex; align-items: center; gap: 24px; margin-bottom: 18px; }
+.kopflogo { height: 100px; width: auto; display: block; }
+.kopflogo-leer { font-family: "Oswald", sans-serif; font-weight: 700; font-size: 40px; color: var(--orange); }
 .datum {
+  margin-left: auto;
   font-family: "Oswald", sans-serif;
   font-size: 24px;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: .04em;
   color: var(--orange);
-  margin-bottom: 8px;
-}
-.ecklogo {
-  position: absolute;
-  top: 24px;
-  right: 24px;
-  width: 112px;
-  height: 112px;
-  border-radius: 50%;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  box-shadow: 0 0 0 5px var(--orange);
-}
-.ecklogo img { width: 82%; height: 82%; object-fit: contain; }
-/* Das Signet bringt seinen orangen Ring selbst mit. */
-.ecklogo:has(.signet) { box-shadow: none; background: #fff; }
-.ecklogo img.signet { width: 100%; height: 100%; }
-.ecklogo-leer {
-  font-family: "Oswald", sans-serif;
-  font-weight: 700;
-  font-size: 24px;
-  color: var(--orange);
-  text-transform: uppercase;
+  text-align: right;
 }
 
 h2 {
@@ -257,8 +236,8 @@ footer .quelle { display: flex; align-items: center; gap: 16px; font-size: 14px;
 
 /* Hochformat 1080×1920 (TikTok, Stories): oben und unten blenden die Apps Bedienelemente ein,
    dort steht nur Hintergrund. Seitlich etwas mehr Rand wegen der Buttons rechts. */
-.format-hoch header { padding: 150px 190px 48px 72px; }
-.format-hoch .ecklogo { top: 140px; right: 64px; }
+.format-hoch header { padding: 150px 150px 48px 72px; }
+.format-hoch .kopflogo { height: 110px; }
 .format-hoch .piraten { margin: 40px 72px 0; padding: 26px 30px; }
 .format-hoch .piraten .avatar .foto { width: 150px; height: 150px; }
 .format-hoch .piraten .frage { font-size: 40px; }
