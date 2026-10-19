@@ -46,9 +46,9 @@ test("Abgeordnete: Parteien werden auf möglichst wenige Folien verteilt, nie ge
   assert.match(folien[0], /gruppe-piraten/);
   assert.doesNotMatch(folien[1], /gruppe-piraten/);
   for (const html of folien) {
-    assert.ok((html.match(/<figure>/g) ?? []).length <= GESICHTER_PRO_FOLIE);
+    assert.ok((html.match(/<figure[ >]/g) ?? []).length <= GESICHTER_PRO_FOLIE);
   }
-  const gesamt = folien.join("").match(/<figure>/g).length;
+  const gesamt = folien.join("").match(/<figure[ >]/g).length;
   assert.equal(gesamt, a.abgeordnete.length + 1);
 });
 
