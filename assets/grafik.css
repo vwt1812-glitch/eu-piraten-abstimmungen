@@ -148,14 +148,16 @@ h2 {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   grid-auto-flow: row dense;
   align-content: stretch; /* Zeilen teilen sich die Höhe – kein freier Streifen unten */
-  column-gap: 40px;
+  gap: 10px;
 }
+/* Jede Partei als eigener Block mit zarter Fläche – klar getrennt, aber im festen Raster */
 .gruppe {
   display: flex;
   align-items: center;
-  gap: 16px;
-  border-bottom: 1px solid #e4ded7;
-  padding: 8px 0 6px;
+  gap: 14px;
+  background: #efe9e2;
+  border-radius: 10px;
+  padding: 8px 12px 6px;
   min-width: 0;
 }
 .gruppe.breit { grid-column: 1 / -1; }
@@ -169,7 +171,6 @@ h2 {
 }
 .piraten-band {
   grid-column: 1 / -1;
-  margin-bottom: 4px;
   display: flex;
   align-items: center;
   gap: 16px;
