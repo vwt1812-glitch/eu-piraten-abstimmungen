@@ -73,3 +73,20 @@ test("Postiz-Client: Posts im Zeitraum abfragen", async () => {
   assert.deepEqual(posts, [{ id: "a", state: "QUEUE" }]);
   assert.equal(url, "https://postiz.example/api/public/v1/posts?startDate=2026-10-18T00%3A00%3A00.000Z&endDate=2026-10-20T00%3A00%3A00.000Z");
 });
+
+test("/neu: Abstimmungen, deren Posts in Postiz alle gelöscht sind, kommen zurück", async () => {
+  const { suchzeitraum, geloeschteAbstimmungen } = await import("../lib/kontrolle.mjs");
+  const g = {
+    "201": { typ: "schedule", zeitpunkt: vor(120), postiz: [{ postId: "p1" }, { postId: "p2" }], story: [{ postId: "p3" }] }, // alles gelöscht
+    "202": { typ: "schedule", zeitpunkt: vor(60), postiz: [{ postId: "q1" }, { postId: "q2" }] },                          // einer noch da
+    "203": { typ: "schedule", zeitpunkt: new Date(JETZT.getTime() + 3600e3).toISOString(), postiz: [{ postId: "r1" }] },  // künftig, gelöscht
+    "204": { typ: "schedule", zeitpunkt: vor(10 * 24 * 60), postiz: [{ postId: "alt" }] },                                // zu alt
+    "205": { typ: "draft", zeitpunkt: vor(60), postiz: [{ postId: "d1" }] },
+    "206": { typ: "schedule", zeitpunkt: vor(60), mastodon: { id: "m" } },                                                  // ohne Postiz
+  };
+  const z = suchzeitraum(g, JETZT);
+  assert.ok(Date.parse(z.startDate) < Date.parse(vor(120)));
+  assert.ok(Date.parse(z.endDate) > JETZT.getTime() + 30 * 864e5);
+  assert.deepEqual(geloeschteAbstimmungen(g, [{ id: "q2", state: "PUBLISHED" }], JETZT), ["201", "203"]);
+  assert.equal(suchzeitraum({ "204": g["204"] }, JETZT), null);
+});

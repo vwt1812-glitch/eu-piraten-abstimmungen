@@ -13,7 +13,7 @@ import { warnungenTexte } from "../lib/warnungen.mjs";
 import { postizClient } from "../lib/postiz.mjs";
 import { auswahlAusUmgebung, kanalUebersicht } from "../lib/kanalauswahl.mjs";
 import { mastodonAusUmgebung, mastodonClient } from "../lib/mastodon.mjs";
-import { erwartetePosts, faelligeKontrollen, abfragezeitraum, auswerten } from "../lib/kontrolle.mjs";
+import { erwartetePosts, faelligeKontrollen, abfragezeitraum, auswerten, suchzeitraum, geloeschteAbstimmungen } from "../lib/kontrolle.mjs";
 
 const pfad = (p) => fileURLToPath(new URL("../" + p, import.meta.url));
 const json = async (p, standard) => JSON.parse(await readFile(pfad(p), "utf8").catch(() => JSON.stringify(standard)));
@@ -35,7 +35,7 @@ const HILFE = [
   "/status – was gerade offen ist",
   "/jetzt – den täglichen Lauf sofort starten",
   "/kanaele – auf welchen Kanälen gepostet wird",
-  "/neu – alle wartenden Vorschauen mit aktuellen Grafiken noch einmal schicken",
+  "/neu – wartende Vorschauen mit aktuellen Grafiken noch einmal schicken; was du in Postiz gelöscht hast, kommt wieder als Vorschau",
 ].join("\n");
 
 // Startet scripts/<name>.mjs; bei Fehler kommen die letzten Zeilen per Telegram.
@@ -113,6 +113,28 @@ async function offenesErledigen() {
   naechsterPostVersuch = arbeitOffen(await json("daten/freigabe.json", leer)) ? Date.now() + 10 * 60 * 1000 : 0;
 }
 
+// Jede Anfrage zählt aufs Stundenlimit von Postiz – posten.mjs liest daten/postiz.json.
+async function postizAnfrageZaehlen() {
+  const verlauf = await json("daten/postiz.json", { anfragen: [] });
+  verlauf.anfragen = [...verlauf.anfragen.filter((t) => Date.now() - Date.parse(t) < 3600e3), new Date().toISOString()];
+  await speichern("daten/postiz.json", verlauf);
+}
+
+// Für /neu: Abstimmungen, deren Posts in Postiz gelöscht wurden, gelten wieder als nicht eingeplant.
+// Gibt ihre IDs zurück; sie kommen danach erneut als Vorschau.
+async function geloeschteZurueckholen() {
+  if (!process.env.POSTIZ_URL || !process.env.POSTIZ_API_KEY) return [];
+  const gepostet = await json("daten/gepostet.json", {});
+  const zeitraum = suchzeitraum(gepostet);
+  if (!zeitraum) return [];
+  const posts = await postizClient({ url: process.env.POSTIZ_URL, apiKey: process.env.POSTIZ_API_KEY }).posts(zeitraum);
+  await postizAnfrageZaehlen();
+  const ids = geloeschteAbstimmungen(gepostet, posts);
+  for (const id of ids) delete gepostet[id];
+  if (ids.length) await speichern("daten/gepostet.json", gepostet);
+  return ids;
+}
+
 // Hat Postiz unsere Posts veröffentlicht? Alle 15 Minuten, und nur wenn ein Termin seit 15 Minuten vorbei ist.
 let naechsteKontrolle = 0;
 async function kontrollieren() {
@@ -124,10 +146,7 @@ async function kontrollieren() {
   try {
     const postiz = postizClient({ url: process.env.POSTIZ_URL, apiKey: process.env.POSTIZ_API_KEY });
     const posts = await postiz.posts(abfragezeitraum(faellig));
-    // Die Anfrage zählt aufs Stundenlimit von Postiz – posten.mjs liest daten/postiz.json.
-    const verlauf = await json("daten/postiz.json", { anfragen: [] });
-    verlauf.anfragen = [...verlauf.anfragen.filter((t) => Date.now() - Date.parse(t) < 3600e3), new Date().toISOString()];
-    await speichern("daten/postiz.json", verlauf);
+    await postizAnfrageZaehlen();
     for (const text of auswerten(posts, faellig, kontrolle)) await melden(text);
     await speichern("daten/kontrolle.json", kontrolle);
   } catch (e) {
@@ -193,12 +212,24 @@ for (;;) {
         await taeglicherLauf();
         await antwort("✔️ Fertig.");
       } else if (b.befehl === "/neu") {
+        const zurueck = await geloeschteZurueckholen().catch(async (e) => {
+          await antwort(`⚠️ Konnte in Postiz nicht nach gelöschten Posts sehen: ${e.message}`);
+          return [];
+        });
         const z = await json("daten/freigabe.json", leer);
-        const anzahl = alleNeuVorlegen(z);
-        if (!anzahl) await antwort("Es wartet gerade keine Vorschau auf Freigabe.");
+        const wartend = alleNeuVorlegen(z);
+        for (const id of zurueck) {
+          z.abstimmungen[id] = { nachrichten: [], aenderungen: {}, ...z.abstimmungen[id], status: "geaendert", gesendet: new Date().toISOString() };
+        }
+        const anzahl = wartend + zurueck.length;
+        if (!anzahl) await antwort("Es wartet gerade keine Vorschau auf Freigabe, und in Postiz wurde nichts Eingeplantes gelöscht.");
         else {
           await speichern("daten/freigabe.json", z);
-          await antwort(`🔄 Schicke ${anzahl} Vorschau${anzahl === 1 ? "" : "en"} neu – lade vorher die Fotos nach …`);
+          const teile = [
+            wartend && `${wartend} wartende`,
+            zurueck.length && `${zurueck.length} in Postiz gelöschte`,
+          ].filter(Boolean).join(" und ");
+          await antwort(`🔄 Schicke ${teile} Vorschau${anzahl === 1 ? "" : "en"} neu – lade vorher die Fotos nach …`);
           await schritt("portraets").catch((e) => melden(`⚠️ Porträts: ${e.message}`));
           naechsterPostVersuch = 0;
         }
