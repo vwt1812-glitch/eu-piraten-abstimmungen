@@ -101,8 +101,9 @@ h2 {
   box-shadow: 0 6px 18px rgba(0,0,0,.08);
 }
 .piraten .avatar .foto { width: 130px; height: 130px; border-radius: 10px; display: block; }
+.piraten .avatar .foto.signet { border-radius: 50%; }
 .piraten-text { flex: 1; }
-.piraten .frage { font-family: "Oswald", sans-serif; font-size: 36px; font-weight: 500; margin: 10px 0 6px; }
+.piraten .frage { font-family: "Oswald", sans-serif; font-size: 36px; font-weight: 500; margin: 0 0 6px; }
 .piraten .frage b { color: var(--orange); font-weight: 700; text-transform: uppercase; }
 .piraten .hinweis { font-size: 18px; color: #555; }
 .piraten .partei-logo { height: 72px; }
@@ -253,7 +254,7 @@ footer .quelle { display: flex; align-items: center; gap: 16px; font-size: 14px;
 .erklaerung + .piraten { margin-top: 14px; padding: 12px 20px; gap: 18px; }
 .erklaerung + .piraten .avatar .foto { width: 96px; height: 96px; }
 .erklaerung + .piraten .partei-logo { height: 64px; }
-.erklaerung + .piraten .frage { font-size: 32px; margin: 4px 0 2px; }
+.erklaerung + .piraten .frage { font-size: 32px; margin: 0 0 2px; }
 .erklaerung + .piraten .hinweis { font-size: 16px; }
 .erklaerung + .piraten > .badge { width: 92px; height: 92px; }
 .erklaerung + .piraten + h2 { margin-top: 18px; }
