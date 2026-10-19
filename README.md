@@ -94,6 +94,12 @@ gepostet wird), `/hilfe`.
 Schon vorgeschlagene Abstimmungen kommen mit `/jetzt` nicht erneut, und das Tageslimit zählt jeden Vorschlag.
 Beim Einplanen nach ✅ werden die Grafiken immer frisch erzeugt.
 
+**Kontrolle:** Ist ein Post 15 Minuten nach seinem Termin in Postiz noch nicht veröffentlicht oder mit Fehler
+markiert, meldet sich der Bot – einmal pro Post, mit Kanal, Termin und Fehlermeldung, und noch einmal, wenn er
+nachgeholt wurde. Hängen alle Posts, läuft meist der Orchestrator von Postiz nicht (`docker exec postiz pm2 list`,
+im Zweifel `docker restart postiz`). Postiz-Container sollten erst starten, wenn Temporal gesund ist
+(`depends_on: temporal: condition: service_healthy`).
+
 ## Was gepostet wird
 
 1. Hauptabstimmungen (Schlussabstimmung bzw. Gesamttext, keine Änderungsanträge) mit Position der PIRATEN,

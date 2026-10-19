@@ -13,6 +13,7 @@ import { warnungenTexte } from "../lib/warnungen.mjs";
 import { postizClient } from "../lib/postiz.mjs";
 import { auswahlAusUmgebung, kanalUebersicht } from "../lib/kanalauswahl.mjs";
 import { mastodonAusUmgebung, mastodonClient } from "../lib/mastodon.mjs";
+import { erwartetePosts, faelligeKontrollen, abfragezeitraum, auswerten } from "../lib/kontrolle.mjs";
 
 const pfad = (p) => fileURLToPath(new URL("../" + p, import.meta.url));
 const json = async (p, standard) => JSON.parse(await readFile(pfad(p), "utf8").catch(() => JSON.stringify(standard)));
@@ -112,6 +113,28 @@ async function offenesErledigen() {
   naechsterPostVersuch = arbeitOffen(await json("daten/freigabe.json", leer)) ? Date.now() + 10 * 60 * 1000 : 0;
 }
 
+// Hat Postiz unsere Posts veröffentlicht? Alle 15 Minuten, und nur wenn ein Termin seit 15 Minuten vorbei ist.
+let naechsteKontrolle = 0;
+async function kontrollieren() {
+  if (Date.now() < naechsteKontrolle || !process.env.POSTIZ_URL || !process.env.POSTIZ_API_KEY) return;
+  naechsteKontrolle = Date.now() + 15 * 60 * 1000;
+  const kontrolle = await json("daten/kontrolle.json", { erledigt: {}, gemeldet: {} });
+  const faellig = faelligeKontrollen(erwartetePosts(await json("daten/gepostet.json", {})), kontrolle);
+  if (!faellig.length) return;
+  try {
+    const postiz = postizClient({ url: process.env.POSTIZ_URL, apiKey: process.env.POSTIZ_API_KEY });
+    const posts = await postiz.posts(abfragezeitraum(faellig));
+    // Die Anfrage zählt aufs Stundenlimit von Postiz – posten.mjs liest daten/postiz.json.
+    const verlauf = await json("daten/postiz.json", { anfragen: [] });
+    verlauf.anfragen = [...verlauf.anfragen.filter((t) => Date.now() - Date.parse(t) < 3600e3), new Date().toISOString()];
+    await speichern("daten/postiz.json", verlauf);
+    for (const text of auswerten(posts, faellig, kontrolle)) await melden(text);
+    await speichern("daten/kontrolle.json", kontrolle);
+  } catch (e) {
+    console.error(`Kontrolle: ${e.message}`);
+  }
+}
+
 async function status() {
   const z = await json("daten/freigabe.json", leer);
   const gepostet = await json("daten/gepostet.json", {});
@@ -197,4 +220,5 @@ for (;;) {
   }
 
   await offenesErledigen();
+  await kontrollieren();
 }
