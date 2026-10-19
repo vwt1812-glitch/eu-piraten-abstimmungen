@@ -43,13 +43,13 @@ test("Abgeordnete: Parteien werden auf möglichst wenige Folien verteilt, nie ge
   const folien = abgeordneteFolien(a, { titel: "T", personen: {}, css: "" });
   assert.equal(folien.length, 2);
   // Piraten nur auf der ersten Folie
-  assert.match(folien[0], /gruppe-piraten/);
-  assert.doesNotMatch(folien[1], /gruppe-piraten/);
+  assert.match(folien[0], /piraten-band/);
+  assert.doesNotMatch(folien[1], /piraten-band/);
   for (const html of folien) {
     assert.ok((html.match(/<figure[ >]/g) ?? []).length <= GESICHTER_PRO_FOLIE);
   }
   const gesamt = folien.join("").match(/<figure[ >]/g).length;
-  assert.equal(gesamt, a.abgeordnete.length + 1);
+  assert.equal(gesamt, a.abgeordnete.length);
 });
 
 test("Hochformat: Seitengröße und Format-Klasse", () => {
