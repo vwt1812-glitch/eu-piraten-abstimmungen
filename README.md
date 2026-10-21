@@ -241,6 +241,13 @@ npm test
 
 Auf GitHub laufen bei jedem Push nur die Tests.
 
+Die CI installiert das zu Playwright passende Chromium und prüft auch den PNG-Renderer.
+Lokal: `npx playwright install chromium` und `RUN_BROWSER_TESTS=1 npm test`.
+Ohne `CHROMIUM_PATH` nach einem Playwright-Update die Browserinstallation erneut ausführen.
+Mit `CHROMIUM_PATH` wird weiterhin das System-Chromium verwendet; dieses separat über
+die Paketverwaltung aktuell halten. Beim Rendern werden Version und ausführbare Datei
+protokolliert, damit der tatsächlich eingesetzte Browser erkennbar ist.
+
 ## Geplant
 
 - eine Übersichtsseite über GitHub Pages
